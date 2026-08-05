@@ -89,4 +89,3 @@ botaoMusica.addEventListener("click", async () => {
 document.getElementById("instagram").addEventListener("click", () => {
   alert("Depois vamos colocar aqui o link oficial do Instagram do Estrela Guia Tarot.");
 });
-
