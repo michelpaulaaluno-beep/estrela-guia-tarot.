@@ -1,1 +1,92 @@
+const horarios = {
+  "Segunda-feira": ["09:00","10:00","14:00","15:00","19:00","20:00"],
+  "Terça-feira": ["10:00","11:00","15:00","19:00"],
+  "Quarta-feira": ["09:00","13:00","16:00","20:00"],
+  "Quinta-feira": ["10:00","14:00","18:00"],
+  "Sexta-feira": ["09:00","11:00","15:00","19:00"]
+};
+
+const dia = document.getElementById("dia");
+const horario = document.getElementById("horario");
+const servico = document.getElementById("servico");
+
+document.getElementById("ano").textContent = new Date().getFullYear();
+
+document.querySelectorAll(".escolher").forEach((botao) => {
+  botao.addEventListener("click", () => {
+    servico.value = botao.dataset.servico;
+    document.getElementById("agendamento").scrollIntoView({behavior:"smooth"});
+  });
+});
+
+dia.addEventListener("change", () => {
+  const lista = horarios[dia.value] || [];
+  horario.innerHTML = '<option value="">Selecione</option>';
+  horario.disabled = lista.length === 0;
+
+  lista.forEach((hora) => {
+    const option = document.createElement("option");
+    option.value = hora;
+    option.textContent = hora;
+    horario.appendChild(option);
+  });
+});
+
+document.getElementById("formulario").addEventListener("submit", (evento) => {
+  evento.preventDefault();
+
+  const dados = {
+    nome: document.getElementById("nome").value.trim(),
+    whatsapp: document.getElementById("whatsapp").value.trim(),
+    servico: servico.value,
+    modalidade: document.getElementById("modalidade").value,
+    dia: dia.value,
+    horario: horario.value,
+    pagamento: document.getElementById("pagamento").value
+  };
+
+  const mensagem = [
+    "Olá! Gostaria de solicitar um agendamento no Estrela Guia Tarot.",
+    "",
+    `Nome: ${dados.nome}`,
+    `WhatsApp: ${dados.whatsapp}`,
+    `Consulta: ${dados.servico}`,
+    `Modalidade: ${dados.modalidade}`,
+    `Dia: ${dados.dia}`,
+    `Horário: ${dados.horario}`,
+    `Pagamento: ${dados.pagamento}`,
+    "",
+    "Aguardo a confirmação da disponibilidade e do pagamento."
+  ].join("\n");
+
+  window.open(
+    `https://wa.me/5555999215944?text=${encodeURIComponent(mensagem)}`,
+    "_blank",
+    "noopener,noreferrer"
+  );
+});
+
+const musica = document.getElementById("musica");
+const botaoMusica = document.getElementById("botao-musica");
+let tocando = false;
+
+botaoMusica.addEventListener("click", async () => {
+  try {
+    if (!tocando) {
+      await musica.play();
+      tocando = true;
+      botaoMusica.textContent = "❚❚ Pausar";
+    } else {
+      musica.pause();
+      tocando = false;
+      botaoMusica.textContent = "♪ Música";
+    }
+  } catch {
+    alert("A música será ativada quando o arquivo musica.mp3 for enviado ao GitHub.");
+  }
+});
+
+document.getElementById("instagram").addEventListener("click", () => {
+  alert("Depois vamos colocar aqui o link oficial do Instagram do Estrela Guia Tarot.");
+});
 
