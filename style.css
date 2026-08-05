@@ -95,7 +95,7 @@ h3{font-size:1.8rem}
   font-weight:700;
   cursor:pointer;
 }
-..botao-dourado{
+.botao-dourado{
 background:linear-gradient(135deg,#caa24d,#f2d17a);
 color:#2c170d;
 font-weight:700;
@@ -106,6 +106,7 @@ transition:.3s;
 .botao-dourado:hover{
 transform:translateY(-3px);
 box-shadow:0 22px 45px rgba(202,162,77,.45);
+}
 }
 }
 .botao-claro{background:var(--branco);border-color:var(--borda);color:var(--cafe)}
