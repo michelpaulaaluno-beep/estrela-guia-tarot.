@@ -58,8 +58,8 @@ button,input,select{font:inherit}
   text-align:center;
   padding:90px 20px;
   background:
-    radial-gradient(circle at 50% 10%, rgba(225,189,118,.22), transparent 34%),
-    linear-gradient(180deg,var(--branco),var(--marfim));
+radial-gradient(circle at top, rgba(255,215,120,.30), transparent 30%),
+linear-gradient(180deg,#fffdf8,#f8f1e5,#efe2ca);
 }
 .hero-conteudo{max-width:850px}
 .selo,.rotulo{
@@ -69,8 +69,8 @@ button,input,select{font:inherit}
   font-weight:700;
   color:var(--dourado);
 }
-.logo-principal{
-  width:min(390px,80vw);
+  .logo-principal{
+  width:min(520px,95vw);;
   margin:22px auto;
   mix-blend-mode:multiply;
 }
@@ -79,7 +79,7 @@ h1,h2,h3{
   color:var(--cafe);
   line-height:1.08;
 }
-h1{font-size:clamp(3rem,8vw,5.6rem);margin-bottom:22px}
+h1{font-size:clamp(3.8rem,9vw,6.5rem);}
 h2{font-size:clamp(2.3rem,5vw,4rem);margin:8px 0 22px}
 h3{font-size:1.8rem}
 .hero p{max-width:700px;margin:0 auto 30px;font-size:1.08rem}
@@ -95,10 +95,18 @@ h3{font-size:1.8rem}
   font-weight:700;
   cursor:pointer;
 }
-.botao-dourado{
-  background:linear-gradient(135deg,var(--dourado),var(--dourado-claro));
-  color:var(--cafe-2);
-  box-shadow:0 12px 30px rgba(185,132,47,.22);
+..botao-dourado{
+background:linear-gradient(135deg,#caa24d,#f2d17a);
+color:#2c170d;
+font-weight:700;
+box-shadow:0 18px 35px rgba(202,162,77,.35);
+transition:.3s;
+}
+
+.botao-dourado:hover{
+transform:translateY(-3px);
+box-shadow:0 22px 45px rgba(202,162,77,.45);
+}
 }
 .botao-claro{background:var(--branco);border-color:var(--borda);color:var(--cafe)}
 .botao:hover{transform:translateY(-2px)}
@@ -122,9 +130,9 @@ h3{font-size:1.8rem}
 }
 .card{
   position:relative;
-  padding:28px;
+  padding:35px;
   border:1px solid var(--borda);
-  border-radius:24px;
+  border-radius:30px;
   background:var(--branco);
   box-shadow:var(--sombra);
 }
