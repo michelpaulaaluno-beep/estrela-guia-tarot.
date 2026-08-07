@@ -63,12 +63,16 @@ linear-gradient(180deg,#fffdf8,#f8f1e5,#efe2ca);
 }
 .hero-conteudo{max-width:850px}
   .selo,.rotulo{
+  display:block;
+  width:100%;
   text-transform:uppercase;
   letter-spacing:.12em;
   font-size:1.25rem;
   font-weight:700;
   color:var(--dourado);
-}
+  text-align:center;
+  margin-bottom:10px;
+  }
   .logo-principal{
   width:min(520px,95vw);
   margin:22px auto;
