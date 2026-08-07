@@ -62,7 +62,6 @@ radial-gradient(circle at top, rgba(255,215,120,.30), transparent 30%),
 linear-gradient(180deg,#fffdf8,#f8f1e5,#efe2ca);
 }
 .hero-conteudo{max-width:850px}
-.selo,.rotulo{
   .selo,.rotulo{
   text-transform:uppercase;
   letter-spacing:.14em;
@@ -71,7 +70,7 @@ linear-gradient(180deg,#fffdf8,#f8f1e5,#efe2ca);
   color:var(--dourado);
 }
   .logo-principal{
-  width:min(520px,95vw);;
+  width:min(520px,95vw);
   margin:22px auto;
   mix-blend-mode:multiply;
 }
@@ -107,8 +106,6 @@ transition:.3s;
 .botao-dourado:hover{
 transform:translateY(-3px);
 box-shadow:0 22px 45px rgba(202,162,77,.45);
-}
-}
 }
 .botao-claro{background:var(--branco);border-color:var(--borda);color:var(--cafe)}
 .botao:hover{transform:translateY(-2px)}
