@@ -1,10 +1,16 @@
-const horarios = {
-  "Segunda-feira": ["09:00","10:00","14:00","15:00","19:00","20:00"],
-  "Terça-feira": ["10:00","11:00","15:00","19:00"],
-  "Quarta-feira": ["09:00","13:00","16:00","20:00"],
-  "Quinta-feira": ["10:00","14:00","18:00"],
-  "Sexta-feira": ["09:00","11:00","15:00","19:00"]
-};
+const horariosDisponiveis = [
+  "08:00",
+  "09:00",
+  "10:00",
+  "11:00",
+  "14:00",
+  "15:00",
+  "16:00",
+  "17:00",
+  "18:00",
+  "19:00",
+  "20:00"
+];
 
 const dia = document.getElementById("dia");
 const horario = document.getElementById("horario");
