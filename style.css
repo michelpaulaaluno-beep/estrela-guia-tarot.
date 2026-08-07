@@ -810,3 +810,34 @@ body.modo-noturno .marca img {
     transition: none;
   }
 }
+/* ===== ALINHAMENTO FINAL: MÚSICA + TEMA ===== */
+
+#botao-musica,
+#botao-tema {
+  width: 130px !important;
+  min-width: 130px !important;
+  height: 42px !important;
+
+  margin: 0 !important;
+  padding: 0 12px !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  box-sizing: border-box !important;
+  line-height: 1 !important;
+  font-size: 14px !important;
+
+  vertical-align: middle !important;
+}
+
+/* garante que o lugar onde eles ficam também fique alinhado */
+.acoes-topo,
+.header-acoes,
+.controles-topo {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+}
