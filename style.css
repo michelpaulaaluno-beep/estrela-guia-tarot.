@@ -689,3 +689,22 @@ body.modo-noturno .marca img{
     min-width:150px;
   }
 }
+/* INSTAGRAM — MODO NOTURNO */
+body.modo-noturno .instagram{
+  background:#8f6527;
+  color:#fff5e8;
+}
+
+body.modo-noturno .instagram h2{
+  color:#fff5e8;
+}
+
+body.modo-noturno .instagram .rotulo{
+  color:#f5d995;
+}
+
+body.modo-noturno .instagram .botao-claro{
+  background:#fff5e8;
+  color:#4b2b18;
+  border-color:#fff5e8;
+}
