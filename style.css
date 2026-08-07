@@ -76,7 +76,6 @@ linear-gradient(180deg,#fffdf8,#f8f1e5,#efe2ca);
   .logo-principal{
   width:min(520px,95vw);
   margin:22px auto;
-  mix-blend-mode:multiply;
 }
 h1,h2,h3{
   font-family:'Cormorant Garamond',serif;
@@ -748,4 +747,13 @@ body.modo-noturno .instagram{
 body.modo-noturno footer{
   background:#100a07;
   color:#f2e7d7;
+}
+/* LOGO TRANSPARENTE — SEM EFEITO DE MISTURA */
+.logo-principal,
+.marca img,
+body.modo-noturno .logo-principal,
+body.modo-noturno .marca img {
+  mix-blend-mode: normal !important;
+  filter: none !important;
+  opacity: 1 !important;
 }
