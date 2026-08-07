@@ -757,3 +757,33 @@ body.modo-noturno .marca img {
   filter: none !important;
   opacity: 1 !important;
 }
+/* ===== BOTÕES DO TOPO ===== */
+
+#botao-musica,
+#botao-tema {
+  height: 42px !important;
+  min-width: 125px !important;
+  padding: 0 16px !important;
+
+  font-size: 14px !important;
+  font-weight: 600 !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  border-radius: 10px !important;
+  box-sizing: border-box !important;
+  line-height: 1 !important;
+}
+
+/* CELULAR */
+@media (max-width: 600px) {
+  #botao-musica,
+  #botao-tema {
+    height: 40px !important;
+    min-width: 115px !important;
+    padding: 0 12px !important;
+    font-size: 13px !important;
+  }
+}
