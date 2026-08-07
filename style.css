@@ -787,20 +787,27 @@ body.modo-noturno .marca img {
     font-size: 13px !important;
   }
 }
-/* ===== TRANSIÇÃO SUAVE DAS SEÇÕES ===== */
+/* ===== TRANSIÇÃO DAS SEÇÕES ===== */
 
 .revelar {
   opacity: 0;
-  transform: translateY(35px);
+  transform: translateY(70px);
   transition:
-    opacity 0.9s ease,
-    transform 0.9s ease;
+    opacity 1s ease,
+    transform 1s ease;
 }
 
 .revelar.ativo {
   opacity: 1;
   transform: translateY(0);
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .revelar {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
 
 /* Acessibilidade */
 @media (prefers-reduced-motion: reduce) {
