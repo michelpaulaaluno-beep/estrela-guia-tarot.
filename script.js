@@ -95,28 +95,28 @@ document.getElementById("instagram").addEventListener("click", () => {
 
 const botaoTema = document.getElementById("botao-tema");
 
-function atualizarBotaoTema() {
-  if (document.body.classList.contains("modo-noturno")) {
+if (botaoTema) {
+
+  if (localStorage.getItem("tema") === "noturno") {
+    document.body.classList.add("modo-noturno");
     botaoTema.textContent = "☀️ Modo claro";
-  } else {
-    botaoTema.textContent = "🌙 Modo noturno";
-  }
-}
-
-if (localStorage.getItem("tema") === "noturno") {
-  document.body.classList.add("modo-noturno");
-}
-
-atualizarBotaoTema();
-
-botaoTema.addEventListener("click", () => {
-  document.body.classList.toggle("modo-noturno");
-
-  if (document.body.classList.contains("modo-noturno")) {
-    localStorage.setItem("tema", "noturno");
-  } else {
-    localStorage.setItem("tema", "claro");
   }
 
-  atualizarBotaoTema();
-});
+  botaoTema.addEventListener("click", function () {
+
+    document.body.classList.toggle("modo-noturno");
+
+    const estaNoturno =
+      document.body.classList.contains("modo-noturno");
+
+    if (estaNoturno) {
+      botaoTema.textContent = "☀️ Modo claro";
+      localStorage.setItem("tema", "noturno");
+    } else {
+      botaoTema.textContent = "🌙 Modo noturno";
+      localStorage.setItem("tema", "claro");
+    }
+
+  });
+
+}
