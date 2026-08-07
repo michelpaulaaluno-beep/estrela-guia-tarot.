@@ -25,7 +25,7 @@ document.getElementById("ano").textContent = new Date().getFullYear();
 
 
 // ========================================
-// DATA E HORÁRIO
+// DATA E HORÁRIO + GOOGLE AGENDA
 // ========================================
 
 // Impede selecionar datas anteriores a hoje
@@ -36,66 +36,86 @@ const dataHoje = String(hoje.getDate()).padStart(2, "0");
 
 dia.min = `${ano}-${mes}-${dataHoje}`;
 
-dia.addEventListener("change", () => {
+dia.addEventListener("change", async () => {
 
   horario.innerHTML =
-    '<option value="">Selecione um horário</option>';
+    '<option value="">Consultando agenda...</option>';
+
+  horario.disabled = true;
 
   if (!dia.value) {
-    horario.disabled = true;
+    horario.innerHTML =
+      '<option value="">Escolha uma data</option>';
     return;
   }
 
-  horario.disabled = false;
+  try {
 
-  horariosDisponiveis.forEach((hora) => {
-    const option = document.createElement("option");
+    const resposta = await fetch(
+      `${AGENDA_API_URL}?data=${encodeURIComponent(dia.value)}`
+    );
 
-    option.value = hora;
-    option.textContent = hora;
+    if (!resposta.ok) {
+      throw new Error("Não foi possível consultar a agenda.");
+    }
 
-    horario.appendChild(option);
-  });
-});
+    const dados = await resposta.json();
 
+    if (!dados.sucesso) {
+      throw new Error(dados.erro || "Erro ao consultar agenda.");
+    }
 
-// ========================================
-// FORMULÁRIO / WHATSAPP
-// ========================================
+    const ocupados = dados.ocupados || [];
 
-document.getElementById("formulario").addEventListener("submit", (evento) => {
+    horario.innerHTML =
+      '<option value="">Selecione um horário</option>';
 
-  evento.preventDefault();
+    let quantidadeLivres = 0;
 
-  const dados = {
-    nome: document.getElementById("nome").value.trim(),
-    whatsapp: document.getElementById("whatsapp").value.trim(),
-    servico: servico.value,
-    modalidade: document.getElementById("modalidade").value,
-    dia: dia.value,
-    horario: horario.value,
-    pagamento: document.getElementById("pagamento").value
-  };
+    horariosDisponiveis.forEach((hora) => {
 
-  const mensagem = [
-    "Olá! Gostaria de solicitar um agendamento no Estrela Guia Tarot.",
-    "",
-    `Nome: ${dados.nome}`,
-    `WhatsApp: ${dados.whatsapp}`,
-    `Consulta: ${dados.servico}`,
-    `Modalidade: ${dados.modalidade}`,
-    `Data: ${dados.dia}`,
-    `Horário: ${dados.horario}`,
-    `Pagamento: ${dados.pagamento}`,
-    "",
-    "Aguardo a confirmação da disponibilidade e do pagamento."
-  ].join("\n");
+      const horaOcupada = ocupados.some((evento) => {
+        return hora >= evento.inicio && hora < evento.fim;
+      });
 
-  window.open(
-    `https://wa.me/5555999215944?text=${encodeURIComponent(mensagem)}`,
-    "_blank",
-    "noopener,noreferrer"
-  );
+      if (!horaOcupada) {
+
+        const option = document.createElement("option");
+
+        option.value = hora;
+        option.textContent = hora;
+
+        horario.appendChild(option);
+
+        quantidadeLivres++;
+      }
+
+    });
+
+    if (quantidadeLivres === 0) {
+
+      horario.innerHTML =
+        '<option value="">Nenhum horário disponível</option>';
+
+      horario.disabled = true;
+
+    } else {
+
+      horario.disabled = false;
+
+    }
+
+  } catch (erro) {
+
+    console.error("Erro ao consultar agenda:", erro);
+
+    horario.innerHTML =
+      '<option value="">Não foi possível consultar os horários</option>';
+
+    horario.disabled = true;
+
+  }
+
 });
 
 
