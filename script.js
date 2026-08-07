@@ -24,11 +24,10 @@ const servico = document.getElementById("servico");
 document.getElementById("ano").textContent = new Date().getFullYear();
 
 
-// ========================================
+// // ========================================
 // DATA E HORÁRIO + GOOGLE AGENDA
 // ========================================
 
-// Impede selecionar datas anteriores a hoje
 const hoje = new Date();
 const ano = hoje.getFullYear();
 const mes = String(hoje.getMonth() + 1).padStart(2, "0");
@@ -38,10 +37,9 @@ dia.min = `${ano}-${mes}-${dataHoje}`;
 
 dia.addEventListener("change", async () => {
 
-  horario.innerHTML =
-    '<option value="">Consultando agenda...</option>';
-
   horario.disabled = true;
+  horario.innerHTML =
+    '<option value="">Consultando horários...</option>';
 
   if (!dia.value) {
     horario.innerHTML =
@@ -51,71 +49,91 @@ dia.addEventListener("change", async () => {
 
   try {
 
-    const resposta = await fetch(
-      `${AGENDA_API_URL}?data=${encodeURIComponent(dia.value)}`
-    );
+    const url =
+      AGENDA_API_URL +
+      "?data=" +
+      encodeURIComponent(dia.value) +
+      "&t=" +
+      Date.now();
 
-    if (!resposta.ok) {
-      throw new Error("Não foi possível consultar a agenda.");
-    }
+    const resposta = await fetch(url, {
+      method: "GET",
+      redirect: "follow"
+    });
 
-    const dados = await resposta.json();
+    const texto = await resposta.text();
+
+    const dados = JSON.parse(texto);
 
     if (!dados.sucesso) {
-      throw new Error(dados.erro || "Erro ao consultar agenda.");
+      throw new Error(dados.erro || "Erro na agenda");
     }
 
-    const ocupados = dados.ocupados || [];
+    const ocupados = Array.isArray(dados.ocupados)
+      ? dados.ocupados
+      : [];
 
     horario.innerHTML =
       '<option value="">Selecione um horário</option>';
 
-    let quantidadeLivres = 0;
+    let livres = 0;
 
     horariosDisponiveis.forEach((hora) => {
 
-      const horaOcupada = ocupados.some((evento) => {
+      const ocupado = ocupados.some((evento) => {
         return hora >= evento.inicio && hora < evento.fim;
       });
 
-      if (!horaOcupada) {
+      if (!ocupado) {
 
-        const option = document.createElement("option");
+        const opcao = document.createElement("option");
 
-        option.value = hora;
-        option.textContent = hora;
+        opcao.value = hora;
+        opcao.textContent = hora;
 
-        horario.appendChild(option);
+        horario.appendChild(opcao);
 
-        quantidadeLivres++;
+        livres++;
       }
-
     });
 
-    if (quantidadeLivres === 0) {
+    if (livres > 0) {
+
+      horario.disabled = false;
+
+    } else {
 
       horario.innerHTML =
         '<option value="">Nenhum horário disponível</option>';
 
       horario.disabled = true;
-
-    } else {
-
-      horario.disabled = false;
-
     }
 
   } catch (erro) {
 
-    console.error("Erro ao consultar agenda:", erro);
+    console.error("ERRO GOOGLE AGENDA:", erro);
+
+    /*
+      IMPORTANTE:
+      Se a Agenda estiver temporariamente indisponível,
+      não vamos travar completamente o agendamento.
+    */
 
     horario.innerHTML =
-      '<option value="">Não foi possível consultar os horários</option>';
+      '<option value="">Selecione um horário</option>';
 
-    horario.disabled = true;
+    horariosDisponiveis.forEach((hora) => {
 
+      const opcao = document.createElement("option");
+
+      opcao.value = hora;
+      opcao.textContent = hora;
+
+      horario.appendChild(opcao);
+    });
+
+    horario.disabled = false;
   }
-
 });
 // ========================================
 // FORMULÁRIO / WHATSAPP
