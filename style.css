@@ -529,3 +529,59 @@ body.modo-noturno .frase-conversa{
     text-align: center;
   }
 }
+/* ========================================
+   CENTRALIZAÇÃO GERAL DAS SEÇÕES
+======================================== */
+
+.secao .conteudo {
+  text-align: center;
+}
+
+/* Conheça o Baralho Cigano */
+.grade-2 {
+  grid-template-columns: 1fr;
+  gap: 20px;
+  text-align: center;
+}
+
+.grade-2 > div {
+  max-width: 850px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Serviços */
+.categoria-servico {
+  text-align: center;
+}
+
+.cabecalho-categoria {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+/* Modalidades de atendimento */
+.modalidades {
+  text-align: center;
+}
+
+/* Agendamento */
+.agendamento {
+  grid-template-columns: 1fr;
+  text-align: center;
+}
+
+.agendamento > div:first-child {
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* O formulário continua organizado normalmente */
+.agendamento form {
+  width: min(700px, 100%);
+  margin-left: auto;
+  margin-right: auto;
+  text-align: left;
+}
