@@ -899,3 +899,142 @@ secoesParaRevelar.forEach((secao, indice) => {
     font-size: 12px !important;
   }
 }
+/* ========================================
+   ABERTURA — ESTRELA CADENTE
+======================================== */
+
+.abertura {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: var(--marfim);
+  overflow: hidden;
+
+  animation: fecharAbertura .7s ease 2.8s forwards;
+}
+
+/* ESTRELA */
+
+.estrela-cadente {
+  position: absolute;
+  top: 18%;
+  left: -150px;
+
+  display: flex;
+  align-items: center;
+
+  animation: voarEstrela 1.2s ease-out .25s forwards;
+}
+
+.estrela-cadente .estrela {
+  position: relative;
+  z-index: 2;
+
+  color: var(--dourado);
+  font-size: 34px;
+
+  text-shadow:
+    0 0 8px rgba(190, 145, 55, .8),
+    0 0 20px rgba(190, 145, 55, .45);
+
+  animation: brilhoEstrela .5s ease-in-out infinite alternate;
+}
+
+.estrela-cadente .rastro {
+  width: 110px;
+  height: 2px;
+  margin-right: -4px;
+
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(190, 145, 55, .25),
+    var(--dourado)
+  );
+
+  filter: blur(.3px);
+}
+
+/* LOGO DA ABERTURA */
+
+.abertura-logo {
+  opacity: 0;
+  transform: scale(.88);
+
+  animation: aparecerLogo .9s ease 1.25s forwards;
+}
+
+.abertura-logo img {
+  width: min(430px, 78vw);
+  height: auto;
+}
+
+/* ANIMAÇÕES */
+
+@keyframes voarEstrela {
+  0% {
+    left: -150px;
+    top: 12%;
+    transform: rotate(-12deg);
+  }
+
+  100% {
+    left: 52%;
+    top: 42%;
+    transform: rotate(-12deg);
+  }
+}
+
+@keyframes brilhoEstrela {
+  from {
+    transform: scale(.9);
+    opacity: .75;
+  }
+
+  to {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+}
+
+@keyframes aparecerLogo {
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fecharAbertura {
+  to {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+}
+
+/* MODO NOTURNO */
+
+body.modo-noturno .abertura {
+  background: var(--cafe);
+}
+
+/* CELULAR */
+
+@media (max-width: 600px) {
+  .abertura-logo img {
+    width: 82vw;
+  }
+
+  .estrela-cadente .estrela {
+    font-size: 28px;
+  }
+
+  .estrela-cadente .rastro {
+    width: 80px;
+  }
+}
