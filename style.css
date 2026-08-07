@@ -787,27 +787,36 @@ body.modo-noturno .marca img {
     font-size: 13px !important;
   }
 }
-/* ===== TRANSIÇÃO DAS SEÇÕES ===== */
+// ========================================
+// TRANSIÇÃO ENTRE AS SEÇÕES
+// ========================================
 
-.revelar {
-  opacity: 0;
-  transform: translateY(70px);
-  transition:
-    opacity 1s ease,
-    transform 1s ease;
-}
+const secoesParaRevelar = document.querySelectorAll("main section");
 
-.revelar.ativo {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .revelar {
-    opacity: 1;
-    transform: none;
-    transition: none;
+const observadorSecoes = new IntersectionObserver(
+  (entradas) => {
+    entradas.forEach((entrada) => {
+      if (entrada.isIntersecting) {
+        entrada.target.classList.add("ativo");
+      }
+    });
+  },
+  {
+    threshold: 0.12,
+    rootMargin: "0px 0px -60px 0px"
   }
+);
+
+secoesParaRevelar.forEach((secao, indice) => {
+  secao.classList.add("revelar");
+
+  // A primeira seção já aparece normalmente
+  if (indice === 0) {
+    secao.classList.add("ativo");
+  } else {
+    observadorSecoes.observe(secao);
+  }
+});
 
 /* Acessibilidade */
 @media (prefers-reduced-motion: reduce) {
