@@ -89,3 +89,34 @@ botaoMusica.addEventListener("click", async () => {
 document.getElementById("instagram").addEventListener("click", () => {
   alert("Depois vamos colocar aqui o link oficial do Instagram do Estrela Guia Tarot.");
 });
+// ========================================
+// MODO NOTURNO
+// ========================================
+
+const botaoTema = document.getElementById("botao-tema");
+
+function atualizarBotaoTema() {
+  if (document.body.classList.contains("modo-noturno")) {
+    botaoTema.textContent = "☀️ Modo claro";
+  } else {
+    botaoTema.textContent = "🌙 Modo noturno";
+  }
+}
+
+if (localStorage.getItem("tema") === "noturno") {
+  document.body.classList.add("modo-noturno");
+}
+
+atualizarBotaoTema();
+
+botaoTema.addEventListener("click", () => {
+  document.body.classList.toggle("modo-noturno");
+
+  if (document.body.classList.contains("modo-noturno")) {
+    localStorage.setItem("tema", "noturno");
+  } else {
+    localStorage.setItem("tema", "claro");
+  }
+
+  atualizarBotaoTema();
+});
