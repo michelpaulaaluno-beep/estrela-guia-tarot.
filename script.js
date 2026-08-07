@@ -1,16 +1,6 @@
-const horariosDisponiveis = [
-  "08:00",
-  "09:00",
-  "10:00",
-  "11:00",
-  "14:00",
-  "15:00",
-  "16:00",
-  "17:00",
-  "18:00",
-  "19:00",
-  "20:00"
-];
+// ========================================
+// HORÁRIOS DE ATENDIMENTO
+// ========================================
 
 const horariosDisponiveis = [
   "08:00",
@@ -30,17 +20,26 @@ const dia = document.getElementById("dia");
 const horario = document.getElementById("horario");
 const servico = document.getElementById("servico");
 
+// Ano automático no rodapé
 document.getElementById("ano").textContent = new Date().getFullYear();
 
-document.querySelectorAll(".escolher").forEach((botao) => {
-  botao.addEventListener("click", () => {
-    servico.value = botao.dataset.servico;
-    document.getElementById("agendamento").scrollIntoView({behavior:"smooth"});
-  });
-});
+
+// ========================================
+// DATA E HORÁRIO
+// ========================================
+
+// Impede selecionar datas anteriores a hoje
+const hoje = new Date();
+const ano = hoje.getFullYear();
+const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+const dataHoje = String(hoje.getDate()).padStart(2, "0");
+
+dia.min = `${ano}-${mes}-${dataHoje}`;
 
 dia.addEventListener("change", () => {
-  horario.innerHTML = '<option value="">Selecione um horário</option>';
+
+  horario.innerHTML =
+    '<option value="">Selecione um horário</option>';
 
   if (!dia.value) {
     horario.disabled = true;
@@ -51,28 +50,21 @@ dia.addEventListener("change", () => {
 
   horariosDisponiveis.forEach((hora) => {
     const option = document.createElement("option");
+
     option.value = hora;
     option.textContent = hora;
-    horario.appendChild(option);
-  });
 
-document.getElementById("formulario").addEventListener("submit", (evento) => {
-});
-
-dia.addEventListener("change", () => {
-  const lista = horarios[dia.value] || [];
-  horario.innerHTML = '<option value="">Selecione</option>';
-  horario.disabled = lista.length === 0;
-
-  lista.forEach((hora) => {
-    const option = document.createElement("option");
-    option.value = hora;
-    option.textContent = hora;
     horario.appendChild(option);
   });
 });
 
+
+// ========================================
+// FORMULÁRIO / WHATSAPP
+// ========================================
+
 document.getElementById("formulario").addEventListener("submit", (evento) => {
+
   evento.preventDefault();
 
   const dados = {
@@ -92,7 +84,7 @@ document.getElementById("formulario").addEventListener("submit", (evento) => {
     `WhatsApp: ${dados.whatsapp}`,
     `Consulta: ${dados.servico}`,
     `Modalidade: ${dados.modalidade}`,
-    `Dia: ${dados.dia}`,
+    `Data: ${dados.dia}`,
     `Horário: ${dados.horario}`,
     `Pagamento: ${dados.pagamento}`,
     "",
@@ -105,6 +97,11 @@ document.getElementById("formulario").addEventListener("submit", (evento) => {
     "noopener,noreferrer"
   );
 });
+
+
+// ========================================
+// MÚSICAS
+// ========================================
 
 const musica = document.getElementById("musica");
 const botaoMusica = document.getElementById("botao-musica");
@@ -123,37 +120,65 @@ musica.volume = 0.25;
 musica.src = listaMusicas[musicaAtual];
 
 botaoMusica.addEventListener("click", async () => {
+
   try {
+
     if (!tocando) {
+
       await musica.play();
+
       tocando = true;
       botaoMusica.textContent = "❚❚ Pausar";
+
     } else {
+
       musica.pause();
+
       tocando = false;
       botaoMusica.textContent = "♪ Música";
     }
+
   } catch {
+
     alert("Não foi possível reproduzir a música.");
+
   }
 });
 
 musica.addEventListener("ended", async () => {
-  musicaAtual = (musicaAtual + 1) % listaMusicas.length;
+
+  musicaAtual =
+    (musicaAtual + 1) % listaMusicas.length;
+
   musica.src = listaMusicas[musicaAtual];
 
   try {
+
     await musica.play();
     tocando = true;
+
   } catch {
+
     tocando = false;
     botaoMusica.textContent = "♪ Música";
+
   }
 });
 
+
+// ========================================
+// INSTAGRAM
+// ========================================
+
 document.getElementById("instagram").addEventListener("click", () => {
-  alert("Depois vamos colocar aqui o link oficial do Instagram do Estrela Guia Tarot.");
+
+  alert(
+    "Depois vamos colocar aqui o link oficial do Instagram do Estrela Guia Tarot."
+  );
+
 });
+
+
 // ========================================
 // MODO NOTURNO
 // ========================================
@@ -163,8 +188,10 @@ const botaoTema = document.getElementById("botao-tema");
 if (botaoTema) {
 
   if (localStorage.getItem("tema") === "noturno") {
+
     document.body.classList.add("modo-noturno");
     botaoTema.textContent = "☀️ Modo claro";
+
   }
 
   botaoTema.addEventListener("click", function () {
@@ -175,11 +202,15 @@ if (botaoTema) {
       document.body.classList.contains("modo-noturno");
 
     if (estaNoturno) {
+
       botaoTema.textContent = "☀️ Modo claro";
       localStorage.setItem("tema", "noturno");
+
     } else {
+
       botaoTema.textContent = "🌙 Modo noturno";
       localStorage.setItem("tema", "claro");
+
     }
 
   });
