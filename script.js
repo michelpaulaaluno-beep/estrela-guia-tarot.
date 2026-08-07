@@ -1,7 +1,7 @@
 // ========================================
 // HORÁRIOS DE ATENDIMENTO
 // ========================================
-
+const AGENDA_API_URL = "https://script.google.com/macros/s/AKfycbwudF762R7finLbS9O9lpUltmN38aIH8AU0gumE9dLi0UgQz9tccHybgS7dyrO-eNc3Yw/exec";
 const horariosDisponiveis = [
   "08:00",
   "09:00",
