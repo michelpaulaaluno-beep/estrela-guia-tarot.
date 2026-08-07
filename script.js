@@ -113,7 +113,7 @@ const listaMusicas = [
   "musica4.mp3"
 ];
 
-let musicaAtual = 0;
+let musicaAtual = Math.floor(Math.random() * listaMusicas.length);
 let tocando = false;
 
 musica.volume = 0.25;
