@@ -63,9 +63,10 @@ linear-gradient(180deg,#fffdf8,#f8f1e5,#efe2ca);
 }
 .hero-conteudo{max-width:850px}
 .selo,.rotulo{
+  .selo,.rotulo{
   text-transform:uppercase;
-  letter-spacing:.08em;
-  font-size:1rem;
+  letter-spacing:.14em;
+  font-size:1.05rem;
   font-weight:700;
   color:var(--dourado);
 }
