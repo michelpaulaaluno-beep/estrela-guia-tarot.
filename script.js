@@ -179,40 +179,59 @@ document.getElementById("instagram").addEventListener("click", () => {
 
 
 // ========================================
-// MODO NOTURNO
+// MODO NOTURNO — AUTOMÁTICO + MANUAL
 // ========================================
 
 const botaoTema = document.getElementById("botao-tema");
+const temaSistema = window.matchMedia("(prefers-color-scheme: dark)");
 
-if (botaoTema) {
+function aplicarTema(noturno) {
+  document.body.classList.toggle("modo-noturno", noturno);
 
-  if (localStorage.getItem("tema") === "noturno") {
-
-    document.body.classList.add("modo-noturno");
-    botaoTema.textContent = "☀️ Modo claro";
-
+  if (botaoTema) {
+    botaoTema.textContent = noturno
+      ? "☀️ Modo claro"
+      : "🌙 Modo noturno";
   }
+}
 
-  botaoTema.addEventListener("click", function () {
+// Verifica se a pessoa já escolheu um tema manualmente
+const temaSalvo = localStorage.getItem("tema");
 
-    document.body.classList.toggle("modo-noturno");
+if (temaSalvo === "noturno") {
+  aplicarTema(true);
+} else if (temaSalvo === "claro") {
+  aplicarTema(false);
+} else {
+  // Primeira visita: segue o tema do aparelho
+  aplicarTema(temaSistema.matches);
+}
 
+// Se a pessoa trocar o tema do aparelho,
+// o site acompanha automaticamente enquanto
+// não houver uma escolha manual salva.
+temaSistema.addEventListener("change", (evento) => {
+  if (!localStorage.getItem("tema")) {
+    aplicarTema(evento.matches);
+  }
+});
+
+// Botão continua permitindo escolha manual
+if (botaoTema) {
+  botaoTema.addEventListener("click", () => {
     const estaNoturno =
       document.body.classList.contains("modo-noturno");
 
-    if (estaNoturno) {
+    const novoTemaNoturno = !estaNoturno;
 
-      botaoTema.textContent = "☀️ Modo claro";
-      localStorage.setItem("tema", "noturno");
+    aplicarTema(novoTemaNoturno);
 
-    } else {
-
-      botaoTema.textContent = "🌙 Modo noturno";
-      localStorage.setItem("tema", "claro");
-
-    }
-
+    localStorage.setItem(
+      "tema",
+      novoTemaNoturno ? "noturno" : "claro"
+    );
   });
+}
 
 }
 // ========================================
