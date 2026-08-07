@@ -216,3 +216,30 @@ if (botaoTema) {
   });
 
 }
+// ========================================
+// TRANSIÇÃO SUAVE ENTRE AS SEÇÕES
+// ========================================
+
+const secoesParaRevelar = document.querySelectorAll("section");
+
+secoesParaRevelar.forEach((secao) => {
+  secao.classList.add("revelar");
+});
+
+const observadorSecoes = new IntersectionObserver(
+  (entradas) => {
+    entradas.forEach((entrada) => {
+      if (entrada.isIntersecting) {
+        entrada.target.classList.add("ativo");
+        observadorSecoes.unobserve(entrada.target);
+      }
+    });
+  },
+  {
+    threshold: 0.15
+  }
+);
+
+secoesParaRevelar.forEach((secao) => {
+  observadorSecoes.observe(secao);
+});
