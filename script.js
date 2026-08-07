@@ -68,7 +68,19 @@ document.getElementById("formulario").addEventListener("submit", (evento) => {
 
 const musica = document.getElementById("musica");
 const botaoMusica = document.getElementById("botao-musica");
+
+const listaMusicas = [
+  "musica1.mp3",
+  "musica2.mp3",
+  "musica3.mp3",
+  "musica4.mp3"
+];
+
+let musicaAtual = 0;
 let tocando = false;
+
+musica.volume = 0.25;
+musica.src = listaMusicas[musicaAtual];
 
 botaoMusica.addEventListener("click", async () => {
   try {
@@ -82,7 +94,20 @@ botaoMusica.addEventListener("click", async () => {
       botaoMusica.textContent = "♪ Música";
     }
   } catch {
-    alert("A música será ativada quando o arquivo musica.mp3 for enviado ao GitHub.");
+    alert("Não foi possível reproduzir a música.");
+  }
+});
+
+musica.addEventListener("ended", async () => {
+  musicaAtual = (musicaAtual + 1) % listaMusicas.length;
+  musica.src = listaMusicas[musicaAtual];
+
+  try {
+    await musica.play();
+    tocando = true;
+  } catch {
+    tocando = false;
+    botaoMusica.textContent = "♪ Música";
   }
 });
 
