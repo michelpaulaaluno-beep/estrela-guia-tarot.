@@ -117,7 +117,44 @@ dia.addEventListener("change", async () => {
   }
 
 });
+// ========================================
+// FORMULÁRIO / WHATSAPP
+// ========================================
 
+document.getElementById("formulario").addEventListener("submit", (evento) => {
+
+  evento.preventDefault();
+
+  const dados = {
+    nome: document.getElementById("nome").value.trim(),
+    whatsapp: document.getElementById("whatsapp").value.trim(),
+    servico: servico.value,
+    modalidade: document.getElementById("modalidade").value,
+    dia: dia.value,
+    horario: horario.value,
+    pagamento: document.getElementById("pagamento").value
+  };
+
+  const mensagem = [
+    "Olá! Gostaria de solicitar um agendamento no Estrela Guia Tarot.",
+    "",
+    `Nome: ${dados.nome}`,
+    `WhatsApp: ${dados.whatsapp}`,
+    `Consulta: ${dados.servico}`,
+    `Modalidade: ${dados.modalidade}`,
+    `Data: ${dados.dia}`,
+    `Horário: ${dados.horario}`,
+    `Pagamento: ${dados.pagamento}`,
+    "",
+    "Aguardo a confirmação da disponibilidade e do pagamento."
+  ].join("\n");
+
+  window.open(
+    `https://wa.me/5555999215944?text=${encodeURIComponent(mensagem)}`,
+    "_blank",
+    "noopener,noreferrer"
+  );
+});
 
 // ========================================
 // MÚSICAS
@@ -251,7 +288,6 @@ if (botaoTema) {
       novoTemaNoturno ? "noturno" : "claro"
     );
   });
-}
 
 }
 // ========================================
