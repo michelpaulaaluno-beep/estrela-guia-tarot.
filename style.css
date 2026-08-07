@@ -444,3 +444,88 @@ body.modo-noturno .botao-claro{
 body.modo-noturno .frase-conversa{
   color:#e1bd76;
 }
+/* ========================================
+   AJUSTE DE ALINHAMENTO E TIPOGRAFIA
+======================================== */
+
+/* Centraliza os títulos das seções */
+.secao .conteudo > .rotulo,
+.secao .conteudo > h2 {
+  text-align: center;
+}
+
+/* Rótulos: CONHEÇA O TRABALHO, SERVIÇOS etc */
+.selo,
+.rotulo {
+  display: block;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: .12em;
+  line-height: 1.4;
+}
+
+/* Títulos principais das seções */
+.secao h2 {
+  font-size: clamp(2.8rem, 6vw, 4.3rem);
+  text-align: center;
+}
+
+/* Centraliza cabeçalhos dos serviços */
+.cabecalho-categoria {
+  justify-content: center;
+  text-align: center;
+}
+
+/* Descrição dos serviços */
+.cabecalho-categoria p {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Espaço de conversa */
+.descricao-conversa {
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+
+/* Cards da conversa */
+.cards-conversa {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Aviso da conversa */
+.aviso-conversa {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* CELULAR */
+@media(max-width:600px) {
+
+  .selo,
+  .rotulo {
+    font-size: 1.05rem;
+    letter-spacing: .09em;
+  }
+
+  .secao h2 {
+    font-size: 2.65rem;
+  }
+
+  .cabecalho-categoria {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .cabecalho-categoria h3 {
+    font-size: 2.35rem;
+  }
+
+  .descricao-conversa {
+    text-align: center;
+  }
+}
