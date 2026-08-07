@@ -217,29 +217,31 @@ if (botaoTema) {
 
 }
 // ========================================
-// TRANSIÇÃO SUAVE ENTRE AS SEÇÕES
+// TRANSIÇÃO ENTRE AS SEÇÕES
 // ========================================
 
-const secoesParaRevelar = document.querySelectorAll("section");
-
-secoesParaRevelar.forEach((secao) => {
-  secao.classList.add("revelar");
-});
+const secoesParaRevelar = document.querySelectorAll("main section");
 
 const observadorSecoes = new IntersectionObserver(
   (entradas) => {
     entradas.forEach((entrada) => {
       if (entrada.isIntersecting) {
         entrada.target.classList.add("ativo");
-        observadorSecoes.unobserve(entrada.target);
       }
     });
   },
   {
-    threshold: 0.15
+    threshold: 0.12,
+    rootMargin: "0px 0px -60px 0px"
   }
 );
 
-secoesParaRevelar.forEach((secao) => {
-  observadorSecoes.observe(secao);
+secoesParaRevelar.forEach((secao, indice) => {
+  secao.classList.add("revelar");
+
+  if (indice === 0) {
+    secao.classList.add("ativo");
+  } else {
+    observadorSecoes.observe(secao);
+  }
 });
