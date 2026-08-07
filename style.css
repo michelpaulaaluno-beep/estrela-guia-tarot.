@@ -584,3 +584,29 @@ body.modo-noturno .frase-conversa{
   margin-right: auto;
   text-align: left;
 }
+/* CORRIGE CABEÇALHO DOS SERVIÇOS */
+
+.cabecalho-categoria{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  gap:14px;
+}
+
+.icone-categoria{
+  margin:0 auto;
+}
+
+.cabecalho-categoria > div{
+  width:100%;
+  text-align:center;
+}
+
+.cabecalho-categoria h3,
+.cabecalho-categoria p{
+  text-align:center;
+  margin-left:auto;
+  margin-right:auto;
+}
