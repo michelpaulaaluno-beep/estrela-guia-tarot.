@@ -708,3 +708,44 @@ body.modo-noturno .instagram .botao-claro{
   color:#4b2b18;
   border-color:#fff5e8;
 }
+/* ===== ESPAÇAMENTO INSTAGRAM E RODAPÉ ===== */
+
+.instagram{
+  padding-top:90px !important;
+  padding-bottom:90px !important;
+  min-height:420px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.instagram .conteudo{
+  width:100%;
+  text-align:center;
+}
+
+.instagram h2{
+  margin:14px auto 24px;
+}
+
+.instagram p{
+  margin-bottom:22px;
+}
+
+/* Rodapé com mais respiro */
+footer{
+  padding:55px 20px !important;
+  text-align:center;
+  min-height:200px;
+}
+
+/* No modo noturno */
+body.modo-noturno .instagram{
+  background:#8f6527;
+  color:#fff5e8;
+}
+
+body.modo-noturno footer{
+  background:#100a07;
+  color:#f2e7d7;
+}
