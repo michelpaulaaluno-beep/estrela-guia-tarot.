@@ -342,3 +342,102 @@ footer small{display:block;max-width:760px;margin:14px auto 0;opacity:.72}
   }
 
 }
+/* ========================================
+   MODO NOTURNO
+======================================== */
+
+.botao-tema{
+  border:1px solid var(--dourado);
+  border-radius:999px;
+  padding:10px 16px;
+  background:transparent;
+  color:var(--cafe);
+  cursor:pointer;
+  font-weight:600;
+  transition:.3s;
+}
+
+.botao-tema:hover{
+  background:var(--dourado);
+  color:var(--cafe-2);
+}
+
+body.modo-noturno{
+  --marfim:#17100c;
+  --marfim-2:#251810;
+  --cafe:#f1d7a4;
+  --cafe-2:#100a07;
+  --texto:#f2e7d7;
+  --branco:#21150f;
+  --borda:rgba(225,189,118,.22);
+  --sombra:0 22px 60px rgba(0,0,0,.35);
+
+  background:#17100c;
+  color:#f2e7d7;
+}
+
+body.modo-noturno .topo{
+  background:rgba(23,16,12,.94);
+  border-bottom-color:rgba(225,189,118,.18);
+}
+
+body.modo-noturno .topo nav a{
+  color:#f2e7d7;
+}
+
+body.modo-noturno .botao-musica,
+body.modo-noturno .botao-tema{
+  color:#f1d7a4;
+  border-color:#b9842f;
+}
+
+body.modo-noturno .hero{
+  background:
+    radial-gradient(circle at top,rgba(185,132,47,.18),transparent 35%),
+    linear-gradient(180deg,#17100c,#21150f,#100a07);
+}
+
+body.modo-noturno .logo-principal{
+  mix-blend-mode:normal;
+}
+
+body.modo-noturno h1,
+body.modo-noturno h2,
+body.modo-noturno h3{
+  color:#f1d7a4;
+}
+
+body.modo-noturno .secao-clara,
+body.modo-noturno .card,
+body.modo-noturno form{
+  background:#21150f;
+  color:#f2e7d7;
+}
+
+body.modo-noturno .aviso,
+body.modo-noturno .pagamentos{
+  background:#1b110c;
+}
+
+body.modo-noturno .aviso-conversa{
+  background:#291b12;
+}
+
+body.modo-noturno input,
+body.modo-noturno select{
+  background:#160e0a;
+  color:#f2e7d7;
+  border-color:rgba(225,189,118,.25);
+}
+
+body.modo-noturno .botao-claro{
+  background:#21150f;
+  color:#f1d7a4;
+  border-color:#b9842f;
+}
+
+body.modo-noturno .frase-conversa{
+  color:#e1bd76;
+}
+
+body,
