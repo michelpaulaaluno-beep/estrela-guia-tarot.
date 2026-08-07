@@ -12,6 +12,20 @@ const horariosDisponiveis = [
   "20:00"
 ];
 
+const horariosDisponiveis = [
+  "08:00",
+  "09:00",
+  "10:00",
+  "11:00",
+  "14:00",
+  "15:00",
+  "16:00",
+  "17:00",
+  "18:00",
+  "19:00",
+  "20:00"
+];
+
 const dia = document.getElementById("dia");
 const horario = document.getElementById("horario");
 const servico = document.getElementById("servico");
@@ -23,6 +37,26 @@ document.querySelectorAll(".escolher").forEach((botao) => {
     servico.value = botao.dataset.servico;
     document.getElementById("agendamento").scrollIntoView({behavior:"smooth"});
   });
+});
+
+dia.addEventListener("change", () => {
+  horario.innerHTML = '<option value="">Selecione um horário</option>';
+
+  if (!dia.value) {
+    horario.disabled = true;
+    return;
+  }
+
+  horario.disabled = false;
+
+  horariosDisponiveis.forEach((hora) => {
+    const option = document.createElement("option");
+    option.value = hora;
+    option.textContent = hora;
+    horario.appendChild(option);
+  });
+
+document.getElementById("formulario").addEventListener("submit", (evento) => {
 });
 
 dia.addEventListener("change", () => {
