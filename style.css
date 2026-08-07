@@ -896,7 +896,7 @@ body.modo-noturno .marca img {
 
   pointer-events: none;
 
-  animation: estrelaPassando 1.8s ease-out 0.4s forwards;
+  animation: estrelaPassando 1.4s ease-out 0.4s forwards;
 }
 
 .estrela-voando {
@@ -928,24 +928,29 @@ body.modo-noturno .marca img {
 @keyframes estrelaPassando {
   0% {
     left: -140px;
-    top: 8vh;
+    top: 14vh;
     opacity: 0;
-    transform: rotate(-12deg);
+    transform: rotate(-5deg) scale(0.8);
   }
 
-  10% {
+  12% {
     opacity: 1;
   }
 
-  80% {
+  55% {
+    top: 17vh;
+    opacity: 1;
+    transform: rotate(-5deg) scale(1.15);
+  }
+
+  85% {
     opacity: 1;
   }
 
   100% {
-    left: 75vw;
-    top: 38vh;
+    left: 105vw;
+    top: 20vh;
     opacity: 0;
-    transform: rotate(-12deg);
+    transform: rotate(-5deg) scale(0.9);
   }
 }
-  
