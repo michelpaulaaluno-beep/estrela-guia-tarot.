@@ -403,7 +403,7 @@ body.modo-noturno .hero{
 }
 
 body.modo-noturno .logo-principal{
-  mix-blend-mode:normal;
+  mix-blend-mode:multiply;
 }
 
 body.modo-noturno h1,
