@@ -280,31 +280,48 @@ if (botaoTema) {
 
 }
 // ========================================
-// TRANSIÇÃO ENTRE AS SEÇÕES
+// TRANSIÇÕES SUAVES ENTRE AS SEÇÕES
 // ========================================
 
-const secoesParaRevelar = document.querySelectorAll("main section");
+document.addEventListener("DOMContentLoaded", () => {
 
-const observadorSecoes = new IntersectionObserver(
-  (entradas) => {
-    entradas.forEach((entrada) => {
-      if (entrada.isIntersecting) {
-        entrada.target.classList.add("ativo");
-      }
-    });
-  },
-  {
-    threshold: 0.12,
-    rootMargin: "0px 0px -60px 0px"
+  const secoes = document.querySelectorAll("main section");
+
+  // Primeira seção já aparece normalmente
+  if (secoes.length > 0) {
+    secoes[0].classList.add("revelar", "ativo");
   }
-);
 
-secoesParaRevelar.forEach((secao, indice) => {
-  secao.classList.add("revelar");
+  // Demais seções entram suavemente ao rolar
+  const observador = new IntersectionObserver(
+    (entradas) => {
 
-  if (indice === 0) {
-    secao.classList.add("ativo");
-  } else {
-    observadorSecoes.observe(secao);
-  }
+      entradas.forEach((entrada) => {
+
+        if (entrada.isIntersecting) {
+          entrada.target.classList.add("ativo");
+
+          // Anima apenas uma vez
+          observador.unobserve(entrada.target);
+        }
+
+      });
+
+    },
+    {
+      threshold: 0.08,
+      rootMargin: "0px 0px -30px 0px"
+    }
+  );
+
+  secoes.forEach((secao, indice) => {
+
+    secao.classList.add("revelar");
+
+    if (indice > 0) {
+      observador.observe(secao);
+    }
+
+  });
+
 });
