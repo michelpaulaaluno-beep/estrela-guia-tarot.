@@ -124,8 +124,25 @@ document.getElementById("formulario").addEventListener("submit", (evento) => {
     pagamento: document.getElementById("pagamento").value
   };
 
+  if (!dados.dia || !dados.horario) {
+    alert("Escolha uma data e um horário.");
+    return;
+  }
+
+  let instrucaoPagamento = "";
+
+  if (dados.pagamento.toLowerCase().includes("pix")) {
+    instrucaoPagamento =
+      "Pagamento: PIX\n" +
+      "Vou realizar o pagamento via Pix e enviar o comprovante por este WhatsApp.";
+  } else {
+    instrucaoPagamento =
+      "Pagamento: CARTÃO DE CRÉDITO\n" +
+      "Aguardo o link de pagamento da Stone para concluir o pagamento.";
+  }
+
   const mensagem = [
-    "Olá! Gostaria de solicitar um agendamento no Estrela Guia Tarot.",
+    "✨ SOLICITAÇÃO DE AGENDAMENTO — ESTRELA GUIA TAROT",
     "",
     `Nome: ${dados.nome}`,
     `WhatsApp: ${dados.whatsapp}`,
@@ -133,9 +150,12 @@ document.getElementById("formulario").addEventListener("submit", (evento) => {
     `Modalidade: ${dados.modalidade}`,
     `Data: ${dados.dia}`,
     `Horário: ${dados.horario}`,
-    `Pagamento: ${dados.pagamento}`,
     "",
-    "Aguardo a confirmação da disponibilidade e do pagamento."
+    instrucaoPagamento,
+    "",
+    "⏳ Status: AGUARDANDO PAGAMENTO",
+    "",
+    "O horário será confirmado após a confirmação do pagamento."
   ].join("\n");
 
   window.open(
