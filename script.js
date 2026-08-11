@@ -219,25 +219,18 @@ dia.addEventListener("change", async () => {
     mostrarHorarios(ocupados);
 
 
-  } catch (erro) {
+    } catch (erro) {
 
-    console.error(
-      "ERRO AO CONSULTAR GOOGLE AGENDA:",
-      erro
-    );
+    console.error("Erro ao consultar Google Agenda:", erro);
 
-    // Se houver qualquer problema na integração,
-    // não bloqueia o campo de horário.
+    // Se a Agenda falhar, não trava o formulário
     mostrarHorarios([]);
-
   }
-
 });
-  
+
 // ========================================
 // FORMULÁRIO / WHATSAPP + PAGAMENTO
 // ========================================
-
 // Links permanentes da Stone por valor
 const linksStone = {
   15: "https://payment-link-v3.stone.com.br/pl_N2KqwMpYLgjoRzGFPhgd9D0X43WnB6bO",
