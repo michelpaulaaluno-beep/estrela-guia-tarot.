@@ -1,5 +1,5 @@
 // =====================================================
-// ESTRELA GUIA TAROT — SCRIPT.JS COMPLETO
+// ESTRELA GUIA TAROT — SCRIPT.JS
 // =====================================================
 
 
@@ -37,60 +37,37 @@ const horariosDisponiveis = [
 
 const linksStone = {
   15: "https://payment-link-v3.stone.com.br/pl_N2KqwMpYLgjoRzGFPhgd9D0X43WnB6bO",
-
   25: "https://payment-link-v3.stone.com.br/pl_pqQWMz3L86nkjXqHozh14PJvAygYEXdm",
-
   35: "https://payment-link-v3.stone.com.br/pl_3LabWAXO7rVQ1gaijuvB5920J86YRvNq",
-
   40: "https://payment-link-v3.stone.com.br/pl_p7ZMPbg4K3yXa7OtElHnMkqrLaBRd2lj",
-
   50: "https://payment-link-v3.stone.com.br/pl_xKYlVjXyqWRDGaECJI5ozEOm1g2wv4NL",
-
   60: "https://payment-link-v3.stone.com.br/pl_kXwQ4neJB8mRojcQEtrKP1G73Exga0Zy",
-
   70: "https://payment-link-v3.stone.com.br/pl_8OPdlnaBwkjQKPnBcyT1pY2mVWD3oR6e"
 };
 
 
 // =====================================================
-// ELEMENTOS DO SITE
+// ELEMENTOS
 // =====================================================
 
-const dia =
-  document.getElementById("dia");
-
-const horario =
-  document.getElementById("horario");
-
-const servico =
-  document.getElementById("servico");
-
-const formulario =
-  document.getElementById("formulario");
-
-const modalidade =
-  document.getElementById("modalidade");
-
-const pagamento =
-  document.getElementById("pagamento");
-
-const nome =
-  document.getElementById("nome");
-
-const whatsapp =
-  document.getElementById("whatsapp");
+const dia = document.getElementById("dia");
+const horario = document.getElementById("horario");
+const servico = document.getElementById("servico");
+const formulario = document.getElementById("formulario");
+const modalidade = document.getElementById("modalidade");
+const pagamento = document.getElementById("pagamento");
+const nome = document.getElementById("nome");
+const whatsapp = document.getElementById("whatsapp");
 
 
 // =====================================================
-// ANO AUTOMÁTICO
+// ANO
 // =====================================================
 
-const elementoAno =
-  document.getElementById("ano");
+const elementoAno = document.getElementById("ano");
 
 if (elementoAno) {
-  elementoAno.textContent =
-    new Date().getFullYear();
+  elementoAno.textContent = new Date().getFullYear();
 }
 
 
@@ -98,29 +75,26 @@ if (elementoAno) {
 // DATA MÍNIMA
 // =====================================================
 
-const hoje = new Date();
-
-const anoAtual =
-  hoje.getFullYear();
-
-const mesAtual =
-  String(
-    hoje.getMonth() + 1
-  ).padStart(2, "0");
-
-const diaAtual =
-  String(
-    hoje.getDate()
-  ).padStart(2, "0");
-
 if (dia) {
-  dia.min =
-    `${anoAtual}-${mesAtual}-${diaAtual}`;
+
+  const hoje = new Date();
+
+  const ano = hoje.getFullYear();
+
+  const mes =
+    String(hoje.getMonth() + 1)
+      .padStart(2, "0");
+
+  const data =
+    String(hoje.getDate())
+      .padStart(2, "0");
+
+  dia.min = `${ano}-${mes}-${data}`;
 }
 
 
 // =====================================================
-// NORMALIZA HORÁRIO VINDO DA AGENDA
+// GOOGLE AGENDA — NORMALIZAR HORÁRIO
 // =====================================================
 
 function normalizarHora(valor) {
@@ -129,21 +103,16 @@ function normalizarHora(valor) {
     return "";
   }
 
-  const texto =
-    String(valor);
+  const texto = String(valor);
 
-  const correspondencia =
+  const encontrado =
     texto.match(/(\d{2}):(\d{2})/);
 
-  if (!correspondencia) {
+  if (!encontrado) {
     return texto;
   }
 
-  return (
-    correspondencia[1] +
-    ":" +
-    correspondencia[2]
-  );
+  return `${encontrado[1]}:${encontrado[2]}`;
 }
 
 
@@ -160,217 +129,33 @@ function mostrarHorarios(ocupados = []) {
   horario.innerHTML =
     '<option value="">Selecione um horário</option>';
 
-  let livres = 0;
-
-
-  horariosDisponiveis.forEach(
-    (hora) => {
-
-      const estaOcupado =
-        ocupados.some(
-          (evento) => {
-
-            if (!evento) {
-              return false;
-            }
-
-            const inicio =
-              normalizarHora(
-                evento.inicio
-              );
-
-            const fim =
-              normalizarHora(
-                evento.fim
-              );
-
-
-            if (!inicio) {
-              return false;
-            }
-
-
-            // Caso a API forneça início e fim
-            if (fim) {
-
-              return (
-                hora >= inicio &&
-                hora < fim
-              );
-            }
-
-
-            // Caso forneça somente início
-            return hora === inicio;
-
-          }
-        );
-
-
-      if (!estaOcupado) {
-
-        const opcao =
-          document.createElement(
-            "option"
-          );
-
-        opcao.value = hora;
-        opcao.textContent = hora;
-
-        horario.appendChild(
-          opcao
-        );
-
-        livres++;
-      }
-
-    }
-  );
-
-
-  if (livres > 0) {
-
-    horario.disabled = false;
-
-  } else {
-
-    horario.innerHTML =
-      '<option value="">Nenhum horário disponível</option>';
-
-    horario.disabled = true;
-
-  }
-}
-
-
-// =====================================================
-// CONSULTAR GOOGLE AGENDA
-// =====================================================
-
-async function consultarAgenda(
-  dataSelecionada
-) {
-
-  const url =
-    `${AGENDA_API_URL}?data=${encodeURIComponent(dataSelecionada)}&t=${Date.now()}`;
-
-
-  const resposta =
-    await fetch(
-      url,
-      {
-        method: "GET",
-        cache: "no-store",
-        redirect: "follow"
-      }
-    );
-
-
-  if (!resposta.ok) {
-
-    throw new Error(
-      `Erro HTTP ${resposta.status}`
-    );
-
-  }
-
-
-  const texto =
-    await resposta.text();
-
-
-  let dados;
-
-
-  try {
-
-    dados =
-      JSON.parse(texto);
-
-  } catch (erro) {
-
-    console.error(
-      "Resposta da Agenda:",
-      texto
-    );
-
-    throw new Error(
-      "A Agenda não retornou JSON válido."
-    );
-
-  }
-
-
-  if (
-    dados &&
-    dados.sucesso === false
-  ) {
-
-    throw new Error(
-      dados.erro ||
-      "Erro retornado pela Agenda."
-    );
-
-  }
-
-
-  if (
-    dados &&
-    Array.isArray(dados.ocupados)
-  ) {
-
-    return dados.ocupados;
-
-  }
-
-
-  // Aceita também API retornando
-  // diretamente um array.
-
-  if (Array.isArray(dados)) {
-// =====================================================
-// GOOGLE AGENDA + HORÁRIOS
-// =====================================================
-
-function normalizarHora(valor) {
-  if (!valor) return "";
-
-  const texto = String(valor);
-  const achou = texto.match(/(\d{2}):(\d{2})/);
-
-  return achou
-    ? `${achou[1]}:${achou[2]}`
-    : texto;
-}
-
-
-function mostrarHorarios(ocupados = []) {
-
-  horario.innerHTML =
-    '<option value="">Selecione um horário</option>';
-
-  let livres = 0;
+  let quantidadeLivres = 0;
 
   horariosDisponiveis.forEach((hora) => {
 
-    const ocupado = ocupados.some((evento) => {
+    const ocupado =
+      ocupados.some((evento) => {
 
-      if (!evento) return false;
+        if (!evento) {
+          return false;
+        }
 
-      const inicio =
-        normalizarHora(evento.inicio);
+        const inicio =
+          normalizarHora(evento.inicio);
 
-      const fim =
-        normalizarHora(evento.fim);
+        const fim =
+          normalizarHora(evento.fim);
 
-      if (!inicio) return false;
+        if (!inicio) {
+          return false;
+        }
 
-      if (fim) {
-        return hora >= inicio && hora < fim;
-      }
+        if (fim) {
+          return hora >= inicio && hora < fim;
+        }
 
-      return hora === inicio;
-    });
+        return hora === inicio;
+      });
 
 
     if (!ocupado) {
@@ -383,12 +168,12 @@ function mostrarHorarios(ocupados = []) {
 
       horario.appendChild(opcao);
 
-      livres++;
+      quantidadeLivres++;
     }
   });
 
 
-  if (livres > 0) {
+  if (quantidadeLivres > 0) {
 
     horario.disabled = false;
 
@@ -401,6 +186,10 @@ function mostrarHorarios(ocupados = []) {
   }
 }
 
+
+// =====================================================
+// CONSULTAR GOOGLE AGENDA
+// =====================================================
 
 async function consultarAgenda(dataSelecionada) {
 
@@ -422,31 +211,61 @@ async function consultarAgenda(dataSelecionada) {
       await fetch(url, {
         method: "GET",
         cache: "no-store",
+        redirect: "follow",
         signal: controlador.signal
       });
 
 
     if (!resposta.ok) {
+
       throw new Error(
         `Agenda respondeu ${resposta.status}`
       );
     }
 
 
-    const dados =
-      await resposta.json();
+    const texto =
+      await resposta.text();
+
+    let dados;
 
 
-    if (dados.sucesso === false) {
+    try {
+
+      dados = JSON.parse(texto);
+
+    } catch {
+
       throw new Error(
-        dados.erro || "Erro na Agenda"
+        "A Agenda não retornou JSON válido."
       );
     }
 
 
-    return Array.isArray(dados.ocupados)
-      ? dados.ocupados
-      : [];
+    if (dados && dados.sucesso === false) {
+
+      throw new Error(
+        dados.erro || "Erro retornado pela Agenda."
+      );
+    }
+
+
+    if (
+      dados &&
+      Array.isArray(dados.ocupados)
+    ) {
+
+      return dados.ocupados;
+    }
+
+
+    if (Array.isArray(dados)) {
+
+      return dados;
+    }
+
+
+    return [];
 
 
   } finally {
@@ -457,104 +276,74 @@ async function consultarAgenda(dataSelecionada) {
 
 
 // =====================================================
-// DATA MÍNIMA
+// ESCOLHA DA DATA
 // =====================================================
 
-const hojeAgenda = new Date();
+if (dia && horario) {
 
-const anoAgenda =
-  hojeAgenda.getFullYear();
+  horario.disabled = true;
 
-const mesAgenda =
-  String(
-    hojeAgenda.getMonth() + 1
-  ).padStart(2, "0");
+  dia.addEventListener(
+    "change",
+    async () => {
 
-const diaAgenda =
-  String(
-    hojeAgenda.getDate()
-  ).padStart(2, "0");
+      if (!dia.value) {
 
-dia.min =
-  `${anoAgenda}-${mesAgenda}-${diaAgenda}`;
+        horario.innerHTML =
+          '<option value="">Escolha uma data</option>';
 
-horario.disabled = true;
+        horario.disabled = true;
+
+        return;
+      }
 
 
-// =====================================================
-// QUANDO ESCOLHER UMA DATA
-// =====================================================
+      // LIBERA IMEDIATAMENTE.
+      // GOOGLE NÃO BLOQUEIA O FORMULÁRIO.
 
-dia.addEventListener(
-  "change",
-  async () => {
-
-    if (!dia.value) {
-
-      horario.innerHTML =
-        '<option value="">Escolha uma data</option>';
-
-      horario.disabled = true;
-
-      return;
-    }
+      mostrarHorarios([]);
 
 
-    // PRIMEIRO LIBERA.
-    // O GOOGLE NÃO PODE MAIS TRAVAR O FORMULÁRIO.
-    mostrarHorarios([]);
+      try {
 
+        const ocupados =
+          await consultarAgenda(dia.value);
 
-    try {
+        mostrarHorarios(ocupados);
 
-      const ocupados =
-        await consultarAgenda(
-          dia.value
+      } catch (erro) {
+
+        console.warn(
+          "Google Agenda indisponível:",
+          erro
         );
 
-
-      // Atualiza retirando os ocupados.
-      mostrarHorarios(ocupados);
-
-
-    } catch (erro) {
-
-      console.warn(
-        "Agenda indisponível. Mantendo horários:",
-        erro
-      );
-
-
-      // Falhou? Mantém tudo liberado.
-      mostrarHorarios([]);
+        // Se Google falhar, horários continuam disponíveis.
+        mostrarHorarios([]);
+      }
     }
-  }
-);
+  );
+}
 
 
 // =====================================================
-// VALOR DA CONSULTA
+// DESCOBRIR VALOR DA CONSULTA
 // =====================================================
 
-function obterValorConsulta(
-  textoServico
-) {
+function obterValorConsulta(textoServico) {
 
   if (!textoServico) {
     return null;
   }
-
 
   const correspondencia =
     textoServico.match(
       /R\$\s*(\d+(?:[.,]\d{1,2})?)/i
     );
 
-
   if (!correspondencia) {
     return null;
   }
-
 
   return Number(
     correspondencia[1]
@@ -564,7 +353,7 @@ function obterValorConsulta(
 
 
 // =====================================================
-// CALCULAR TOTAL
+// CALCULAR TOTAL ATUAL
 // =====================================================
 
 function calcularTotal(
@@ -573,84 +362,33 @@ function calcularTotal(
 ) {
 
   const valorConsulta =
-    obterValorConsulta(
-      servicoSelecionado
-    );
-
+    obterValorConsulta(servicoSelecionado);
 
   if (valorConsulta === null) {
     return null;
   }
 
-
-  let total =
-    valorConsulta;
+  let total = valorConsulta;
 
 
-  /*
-  SOMA R$ 10 SOMENTE PARA:
-
-  Presencial na casa do cliente
-  em Alegrete (+ R$ 10)
-  */
-
+  // Adicional de R$10 somente na casa do cliente.
   if (
     modalidadeSelecionada &&
     modalidadeSelecionada
       .toLowerCase()
-      .includes(
-        "casa do cliente"
-      )
+      .includes("casa do cliente")
   ) {
 
     total += 10;
-
   }
 
 
   return total;
 }
-// ========================================
-// LIMPA PAGAMENTO QUANDO MUDA A ESCOLHA
-// ========================================
 
-function limparPagamentoGerado() {
-
-  // Remove a caixa do Pix que já foi gerada
-  const caixaPix =
-    document.getElementById("pagamento-pix-gerado");
-
-  if (caixaPix) {
-    caixaPix.remove();
-  }
-
-  // Limpa a forma de pagamento escolhida
-  const campoPagamento =
-    document.getElementById("pagamento");
-
-  if (campoPagamento) {
-    campoPagamento.value = "";
-  }
-}
-
-
-// Mudou a consulta?
-// O pagamento anterior não vale mais.
-servico.addEventListener("change", () => {
-  limparPagamentoGerado();
-});
-
-
-// Mudou a modalidade?
-// O pagamento anterior não vale mais.
-document
-  .getElementById("modalidade")
-  .addEventListener("change", () => {
-    limparPagamentoGerado();
-  });
 
 // =====================================================
-// FORMATA DINHEIRO
+// FORMATAÇÃO DE DINHEIRO
 // =====================================================
 
 function formatarDinheiro(valor) {
@@ -658,34 +396,105 @@ function formatarDinheiro(valor) {
   return Number(valor)
     .toFixed(2)
     .replace(".", ",");
-
 }
 
 
 // =====================================================
-// PIX — CAMPO EMV
+// INVALIDAR PAGAMENTO ANTIGO
 // =====================================================
 
-function campoPix(
-  id,
-  valor
-) {
+function invalidarPagamento() {
 
-  const texto =
-    String(valor);
+  const caixaPix =
+    document.getElementById(
+      "pagamento-pix-gerado"
+    );
 
+  if (caixaPix) {
+    caixaPix.remove();
+  }
+
+
+  // Remove qualquer agendamento antigo salvo.
+  localStorage.removeItem(
+    "ultimoAgendamento"
+  );
+
+
+  // Obriga escolher a forma de pagamento novamente.
+  if (pagamento) {
+    pagamento.value = "";
+  }
+}
+
+
+// =====================================================
+// MUDOU CONSULTA = PAGAMENTO ANTIGO NÃO VALE
+// =====================================================
+
+if (servico) {
+
+  servico.addEventListener(
+    "change",
+    () => {
+
+      invalidarPagamento();
+
+      const novoTotal =
+        calcularTotal(
+          servico.value,
+          modalidade ? modalidade.value : ""
+        );
+
+      console.log(
+        "Consulta alterada. Novo total:",
+        novoTotal
+      );
+    }
+  );
+}
+
+
+// =====================================================
+// MUDOU MODALIDADE = PAGAMENTO ANTIGO NÃO VALE
+// =====================================================
+
+if (modalidade) {
+
+  modalidade.addEventListener(
+    "change",
+    () => {
+
+      invalidarPagamento();
+
+      const novoTotal =
+        calcularTotal(
+          servico ? servico.value : "",
+          modalidade.value
+        );
+
+      console.log(
+        "Modalidade alterada. Novo total:",
+        novoTotal
+      );
+    }
+  );
+}
+
+
+// =====================================================
+// PIX — CAMPOS
+// =====================================================
+
+function campoPix(id, valor) {
+
+  const texto = String(valor);
 
   const tamanho =
-    String(
-      texto.length
-    ).padStart(2, "0");
+    String(texto.length)
+      .padStart(2, "0");
 
-
-  return (
-    id +
-    tamanho +
-    texto
-  );
+  return id + tamanho + texto;
 }
 
 
@@ -695,9 +504,7 @@ function campoPix(
 
 function crc16(payload) {
 
-  let resultado =
-    0xFFFF;
-
+  let resultado = 0xFFFF;
 
   for (
     let i = 0;
@@ -706,9 +513,7 @@ function crc16(payload) {
   ) {
 
     resultado ^=
-      payload.charCodeAt(i)
-      << 8;
-
+      payload.charCodeAt(i) << 8;
 
     for (
       let j = 0;
@@ -716,28 +521,19 @@ function crc16(payload) {
       j++
     ) {
 
-      if (
-        (resultado & 0x8000)
-        !== 0
-      ) {
+      if ((resultado & 0x8000) !== 0) {
 
         resultado =
-          (resultado << 1)
-          ^ 0x1021;
+          (resultado << 1) ^ 0x1021;
 
       } else {
 
         resultado =
           resultado << 1;
-
       }
 
-
-      resultado &=
-        0xFFFF;
-
+      resultado &= 0xFFFF;
     }
-
   }
 
 
@@ -752,9 +548,7 @@ function crc16(payload) {
 // GERAR PIX COPIA E COLA
 // =====================================================
 
-function gerarPixCopiaECola(
-  valor
-) {
+function gerarPixCopiaECola(valor) {
 
   const gui =
     campoPix(
@@ -762,13 +556,11 @@ function gerarPixCopiaECola(
       "BR.GOV.BCB.PIX"
     );
 
-
   const chave =
     campoPix(
       "01",
       CHAVE_PIX
     );
-
 
   const contaPix =
     campoPix(
@@ -776,101 +568,35 @@ function gerarPixCopiaECola(
       gui + chave
     );
 
-
   const valorFormatado =
-    Number(valor)
-      .toFixed(2);
+    Number(valor).toFixed(2);
 
 
   let payload = "";
 
+  payload += campoPix("00", "01");
+  payload += contaPix;
+  payload += campoPix("52", "0000");
+  payload += campoPix("53", "986");
+  payload += campoPix("54", valorFormatado);
+  payload += campoPix("58", "BR");
+  payload += campoPix("59", "ESTRELA GUIA TAROT");
+  payload += campoPix("60", "ALEGRETE");
 
-  // Payload Format Indicator
-  payload +=
-    campoPix(
-      "00",
-      "01"
-    );
-
-
-  // Merchant Account Information
-  payload +=
-    contaPix;
-
-
-  // Merchant Category Code
-  payload +=
-    campoPix(
-      "52",
-      "0000"
-    );
-
-
-  // Moeda BRL
-  payload +=
-    campoPix(
-      "53",
-      "986"
-    );
-
-
-  // Valor
-  payload +=
-    campoPix(
-      "54",
-      valorFormatado
-    );
-
-
-  // País
-  payload +=
-    campoPix(
-      "58",
-      "BR"
-    );
-
-
-  // Nome
-  payload +=
-    campoPix(
-      "59",
-      "ESTRELA GUIA TAROT"
-    );
-
-
-  // Cidade
-  payload +=
-    campoPix(
-      "60",
-      "ALEGRETE"
-    );
-
-
-  // Transaction ID
   payload +=
     campoPix(
       "62",
-      campoPix(
-        "05",
-        "***"
-      )
+      campoPix("05", "***")
     );
 
+  payload += "6304";
 
-  // CRC
-  payload +=
-    "6304";
-
-
-  return (
-    payload +
-    crc16(payload)
-  );
+  return payload + crc16(payload);
 }
 
 
 // =====================================================
-// MONTAR MENSAGEM DO WHATSAPP
+// MENSAGEM WHATSAPP
 // =====================================================
 
 function montarMensagem(
@@ -887,19 +613,13 @@ function montarMensagem(
   return [
 
     "✨ SOLICITAÇÃO DE AGENDAMENTO — ESTRELA GUIA TAROT",
-
     "",
 
     `Nome: ${dados.nome}`,
-
     `WhatsApp: ${dados.whatsapp}`,
-
     `Consulta: ${dados.servico}`,
-
     `Modalidade: ${dados.modalidade}`,
-
     `Data: ${dados.dia}`,
-
     `Horário: ${dados.horario}`,
 
     "",
@@ -930,25 +650,21 @@ function montarMensagem(
 // ABRIR WHATSAPP
 // =====================================================
 
-function abrirWhatsapp(
-  mensagem
-) {
+function abrirWhatsapp(mensagem) {
 
   const url =
     `https://wa.me/${WHATSAPP_ESTRELA_GUIA}?text=${encodeURIComponent(mensagem)}`;
-
 
   window.open(
     url,
     "_blank",
     "noopener,noreferrer"
   );
-
 }
 
 
 // =====================================================
-// MOSTRAR PIX NA TELA
+// MOSTRAR PIX
 // =====================================================
 
 function mostrarPagamentoPix(
@@ -958,11 +674,12 @@ function mostrarPagamentoPix(
   valorConsulta
 ) {
 
+  // Segurança extra:
+  // remove pagamento anterior.
   const anterior =
     document.getElementById(
       "pagamento-pix-gerado"
     );
-
 
   if (anterior) {
     anterior.remove();
@@ -970,129 +687,72 @@ function mostrarPagamentoPix(
 
 
   const caixa =
-    document.createElement(
-      "div"
-    );
-
+    document.createElement("div");
 
   caixa.id =
     "pagamento-pix-gerado";
 
+  caixa.style.marginTop = "24px";
+  caixa.style.padding = "22px";
+  caixa.style.borderRadius = "14px";
+  caixa.style.background = "#ffffff";
+  caixa.style.color = "#222222";
+  caixa.style.textAlign = "center";
 
-  caixa.style.marginTop =
-    "24px";
-
-  caixa.style.padding =
-    "22px";
-
-  caixa.style.borderRadius =
-    "14px";
-
-  caixa.style.background =
-    "#ffffff";
-
-  caixa.style.color =
-    "#222222";
-
-  caixa.style.textAlign =
-    "center";
-
-
-  // -------------------------------
 
   const titulo =
-    document.createElement(
-      "h3"
-    );
-
+    document.createElement("h3");
 
   titulo.textContent =
     "Pagamento via Pix";
 
 
-  // -------------------------------
-
   const valor =
-    document.createElement(
-      "p"
-    );
+    document.createElement("p");
 
-
-  valor.style.fontSize =
-    "26px";
-
-  valor.style.fontWeight =
-    "bold";
-
+  valor.style.fontSize = "26px";
+  valor.style.fontWeight = "bold";
 
   valor.textContent =
     `R$ ${formatarDinheiro(total)}`;
 
 
-  // -------------------------------
+  const resumo =
+    document.createElement("p");
+
+  resumo.textContent =
+    `${dados.servico} — ${dados.modalidade}`;
+
 
   const instrucao =
-    document.createElement(
-      "p"
-    );
-
+    document.createElement("p");
 
   instrucao.textContent =
     "Copie o código Pix abaixo e faça o pagamento no aplicativo do seu banco.";
 
 
-  // -------------------------------
-
   const codigo =
-    document.createElement(
-      "textarea"
-    );
+    document.createElement("textarea");
 
+  codigo.value = codigoPix;
+  codigo.readOnly = true;
+  codigo.rows = 5;
 
-  codigo.value =
-    codigoPix;
+  codigo.style.width = "100%";
+  codigo.style.boxSizing = "border-box";
+  codigo.style.padding = "12px";
+  codigo.style.marginTop = "10px";
 
-
-  codigo.readOnly =
-    true;
-
-
-  codigo.rows =
-    5;
-
-
-  codigo.style.width =
-    "100%";
-
-  codigo.style.boxSizing =
-    "border-box";
-
-  codigo.style.padding =
-    "12px";
-
-  codigo.style.marginTop =
-    "10px";
-
-
-  // -------------------------------
 
   const botaoCopiar =
-    document.createElement(
-      "button"
-    );
+    document.createElement("button");
 
-
-  botaoCopiar.type =
-    "button";
-
-
+  botaoCopiar.type = "button";
   botaoCopiar.className =
     "botao botao-dourado";
 
-
   botaoCopiar.style.marginTop =
     "12px";
-
 
   botaoCopiar.textContent =
     "Copiar código Pix";
@@ -1105,82 +765,53 @@ function mostrarPagamentoPix(
       try {
 
         await navigator.clipboard
-          .writeText(
-            codigoPix
-          );
-
+          .writeText(codigoPix);
 
         botaoCopiar.textContent =
           "✓ Código Pix copiado";
 
-
-      } catch (erro) {
+      } catch {
 
         codigo.focus();
-
         codigo.select();
-
 
         try {
 
-          document.execCommand(
-            "copy"
-          );
-
+          document.execCommand("copy");
 
           botaoCopiar.textContent =
             "✓ Código Pix copiado";
 
-
-        } catch (erroCopia) {
+        } catch {
 
           alert(
             "Selecione o código Pix e copie manualmente."
           );
-
         }
-
       }
-
     }
   );
 
 
-  // -------------------------------
-
   const aviso =
-    document.createElement(
-      "p"
-    );
+    document.createElement("p");
 
-
-  aviso.style.marginTop =
-    "20px";
-
+  aviso.style.marginTop = "20px";
 
   aviso.textContent =
     "Depois do pagamento, clique abaixo para enviar o comprovante pelo WhatsApp.";
 
 
-  // -------------------------------
-
   const botaoWhatsapp =
-    document.createElement(
-      "button"
-    );
+    document.createElement("button");
 
-
-  botaoWhatsapp.type =
-    "button";
-
+  botaoWhatsapp.type = "button";
 
   botaoWhatsapp.className =
     "botao botao-dourado";
 
-
   botaoWhatsapp.style.marginTop =
     "10px";
-
 
   botaoWhatsapp.textContent =
     "Já paguei — enviar comprovante";
@@ -1189,6 +820,51 @@ function mostrarPagamentoPix(
   botaoWhatsapp.addEventListener(
     "click",
     () => {
+
+      /*
+      SEGURANÇA:
+      antes de abrir WhatsApp, confere se
+      consulta/modalidade ainda são as mesmas
+      usadas para gerar esse Pix.
+      */
+
+      if (
+        servico.value !== dados.servico ||
+        modalidade.value !== dados.modalidade
+      ) {
+
+        caixa.remove();
+
+        pagamento.value = "";
+
+        alert(
+          "A consulta ou modalidade foi alterada. Gere o pagamento novamente."
+        );
+
+        return;
+      }
+
+
+      const totalAtual =
+        calcularTotal(
+          servico.value,
+          modalidade.value
+        );
+
+
+      if (totalAtual !== total) {
+
+        caixa.remove();
+
+        pagamento.value = "";
+
+        alert(
+          "O valor do atendimento mudou. Gere o pagamento novamente."
+        );
+
+        return;
+      }
+
 
       let mensagem =
         montarMensagem(
@@ -1206,55 +882,27 @@ function mostrarPagamentoPix(
         "\n📎 Envie o comprovante nesta conversa.";
 
 
-      abrirWhatsapp(
-        mensagem
-      );
-
+      abrirWhatsapp(mensagem);
     }
   );
 
 
-  // -------------------------------
+  caixa.appendChild(titulo);
+  caixa.appendChild(valor);
+  caixa.appendChild(resumo);
+  caixa.appendChild(instrucao);
+  caixa.appendChild(codigo);
+  caixa.appendChild(botaoCopiar);
+  caixa.appendChild(aviso);
+  caixa.appendChild(botaoWhatsapp);
 
-  caixa.appendChild(
-    titulo
-  );
-
-  caixa.appendChild(
-    valor
-  );
-
-  caixa.appendChild(
-    instrucao
-  );
-
-  caixa.appendChild(
-    codigo
-  );
-
-  caixa.appendChild(
-    botaoCopiar
-  );
-
-  caixa.appendChild(
-    aviso
-  );
-
-  caixa.appendChild(
-    botaoWhatsapp
-  );
-
-
-  formulario.appendChild(
-    caixa
-  );
+  formulario.appendChild(caixa);
 
 
   caixa.scrollIntoView({
     behavior: "smooth",
     block: "center"
   });
-
 }
 
 
@@ -1270,6 +918,12 @@ if (formulario) {
 
       evento.preventDefault();
 
+
+      /*
+      IMPORTANTE:
+      lê TODOS os campos novamente neste exato momento.
+      Não reaproveita preço anterior.
+      */
 
       const dados = {
 
@@ -1307,13 +961,8 @@ if (formulario) {
           pagamento
             ? pagamento.value
             : ""
-
       };
 
-
-      // ---------------------------------
-      // VALIDAR
-      // ---------------------------------
 
       if (
         !dados.nome ||
@@ -1330,13 +979,12 @@ if (formulario) {
         );
 
         return;
-
       }
 
 
-      // ---------------------------------
-      // VALORES
-      // ---------------------------------
+      /*
+      RECALCULA O VALOR AGORA.
+      */
 
       const valorConsulta =
         obterValorConsulta(
@@ -1361,7 +1009,6 @@ if (formulario) {
         );
 
         return;
-
       }
 
 
@@ -1376,9 +1023,7 @@ if (formulario) {
       ) {
 
         const codigoPix =
-          gerarPixCopiaECola(
-            total
-          );
+          gerarPixCopiaECola(total);
 
 
         mostrarPagamentoPix(
@@ -1388,14 +1033,12 @@ if (formulario) {
           valorConsulta
         );
 
-
         return;
-
       }
 
 
       // =================================================
-      // CARTÃO STONE
+      // CARTÃO
       // =================================================
 
       if (
@@ -1415,14 +1058,8 @@ if (formulario) {
           );
 
           return;
-
         }
 
-
-        /*
-        Salva os dados no navegador
-        antes de ir para a Stone.
-        */
 
         localStorage.setItem(
           "ultimoAgendamento",
@@ -1434,26 +1071,18 @@ if (formulario) {
         );
 
 
-        /*
-        Abre diretamente o checkout Stone.
-        */
-
         window.location.href =
           linkPagamento;
 
-
         return;
-
       }
 
 
       alert(
         "Escolha Pix ou Cartão de crédito."
       );
-
     }
   );
-
 }
 
 
@@ -1462,15 +1091,10 @@ if (formulario) {
 // =====================================================
 
 const musica =
-  document.getElementById(
-    "musica"
-  );
+  document.getElementById("musica");
 
 const botaoMusica =
-  document.getElementById(
-    "botao-musica"
-  );
-
+  document.getElementById("botao-musica");
 
 const listaMusicas = [
   "musica1.mp3",
@@ -1479,31 +1103,21 @@ const listaMusicas = [
   "musica4.mp3"
 ];
 
-
 let musicaAtual =
   Math.floor(
     Math.random() *
     listaMusicas.length
   );
 
-
-let tocando =
-  false;
+let tocando = false;
 
 
-if (
-  musica &&
-  botaoMusica
-) {
+if (musica && botaoMusica) {
 
-  musica.volume =
-    0.25;
-
+  musica.volume = 0.25;
 
   musica.src =
-    listaMusicas[
-      musicaAtual
-    ];
+    listaMusicas[musicaAtual];
 
 
   botaoMusica.addEventListener(
@@ -1516,34 +1130,27 @@ if (
 
           await musica.play();
 
-          tocando =
-            true;
+          tocando = true;
 
           botaoMusica.textContent =
             "❚❚ Pausar";
-
 
         } else {
 
           musica.pause();
 
-          tocando =
-            false;
+          tocando = false;
 
           botaoMusica.textContent =
             "♪ Música";
-
         }
 
-
-      } catch (erro) {
+      } catch {
 
         alert(
           "Não foi possível reproduzir a música."
         );
-
       }
-
     }
   );
 
@@ -1553,39 +1160,27 @@ if (
     async () => {
 
       musicaAtual =
-        (
-          musicaAtual + 1
-        ) %
+        (musicaAtual + 1) %
         listaMusicas.length;
 
-
       musica.src =
-        listaMusicas[
-          musicaAtual
-        ];
-
+        listaMusicas[musicaAtual];
 
       try {
 
         await musica.play();
 
-        tocando =
-          true;
+        tocando = true;
 
+      } catch {
 
-      } catch (erro) {
-
-        tocando =
-          false;
+        tocando = false;
 
         botaoMusica.textContent =
           "♪ Música";
-
       }
-
     }
   );
-
 }
 
 
@@ -1594,10 +1189,7 @@ if (
 // =====================================================
 
 const botaoInstagram =
-  document.getElementById(
-    "instagram"
-  );
-
+  document.getElementById("instagram");
 
 if (botaoInstagram) {
 
@@ -1610,10 +1202,8 @@ if (botaoInstagram) {
         "_blank",
         "noopener,noreferrer"
       );
-
     }
   );
-
 }
 
 
@@ -1622,10 +1212,7 @@ if (botaoInstagram) {
 // =====================================================
 
 const botaoTema =
-  document.getElementById(
-    "botao-tema"
-  );
-
+  document.getElementById("botao-tema");
 
 const temaSistema =
   window.matchMedia(
@@ -1633,15 +1220,12 @@ const temaSistema =
   );
 
 
-function aplicarTema(
-  noturno
-) {
+function aplicarTema(noturno) {
 
   document.body.classList.toggle(
     "modo-noturno",
     noturno
   );
-
 
   if (botaoTema) {
 
@@ -1649,38 +1233,27 @@ function aplicarTema(
       noturno
         ? "☀️ Modo claro"
         : "🌙 Modo noturno";
-
   }
-
 }
 
 
 const temaSalvo =
-  localStorage.getItem(
-    "tema"
-  );
+  localStorage.getItem("tema");
 
 
-if (
-  temaSalvo === "noturno"
-) {
+if (temaSalvo === "noturno") {
 
   aplicarTema(true);
 
-
-} else if (
-  temaSalvo === "claro"
-) {
+} else if (temaSalvo === "claro") {
 
   aplicarTema(false);
-
 
 } else {
 
   aplicarTema(
     temaSistema.matches
   );
-
 }
 
 
@@ -1688,18 +1261,12 @@ temaSistema.addEventListener(
   "change",
   (evento) => {
 
-    if (
-      !localStorage.getItem(
-        "tema"
-      )
-    ) {
+    if (!localStorage.getItem("tema")) {
 
       aplicarTema(
         evento.matches
       );
-
     }
-
   }
 );
 
@@ -1717,15 +1284,12 @@ if (botaoTema) {
             "modo-noturno"
           );
 
-
       const novoTemaNoturno =
         !estaNoturno;
-
 
       aplicarTema(
         novoTemaNoturno
       );
-
 
       localStorage.setItem(
         "tema",
@@ -1733,15 +1297,13 @@ if (botaoTema) {
           ? "noturno"
           : "claro"
       );
-
     }
   );
-
 }
 
 
 // =====================================================
-// TRANSIÇÕES SUAVES
+// TRANSIÇÕES
 // =====================================================
 
 document.addEventListener(
@@ -1754,9 +1316,7 @@ document.addEventListener(
       );
 
 
-    if (
-      secoes.length > 0
-    ) {
+    if (secoes.length > 0) {
 
       secoes[0]
         .classList
@@ -1764,18 +1324,15 @@ document.addEventListener(
           "revelar",
           "ativo"
         );
-
     }
 
 
     if (
-      "IntersectionObserver"
-      in window
+      "IntersectionObserver" in window
     ) {
 
       const observador =
         new IntersectionObserver(
-
           (entradas) => {
 
             entradas.forEach(
@@ -1787,28 +1344,20 @@ document.addEventListener(
 
                   entrada.target
                     .classList
-                    .add(
-                      "ativo"
-                    );
-
+                    .add("ativo");
 
                   observador.unobserve(
                     entrada.target
                   );
-
                 }
-
               }
             );
-
           },
-
           {
             threshold: 0.08,
             rootMargin:
               "0px 0px -30px 0px"
           }
-
         );
 
 
@@ -1819,20 +1368,14 @@ document.addEventListener(
             "revelar"
           );
 
-
-          if (
-            indice > 0
-          ) {
+          if (indice > 0) {
 
             observador.observe(
               secao
             );
-
           }
-
         }
       );
-
 
     } else {
 
@@ -1843,11 +1386,8 @@ document.addEventListener(
             "revelar",
             "ativo"
           );
-
         }
       );
-
     }
-
   }
 );
