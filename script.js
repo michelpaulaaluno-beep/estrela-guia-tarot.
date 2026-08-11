@@ -23,7 +23,6 @@ const servico = document.getElementById("servico");
 // Ano automático no rodapé
 document.getElementById("ano").textContent = new Date().getFullYear();
 
-
 // ========================================
 // DATA E HORÁRIO + GOOGLE AGENDA
 // ========================================
@@ -44,92 +43,7 @@ function mostrarHorarios(ocupados = []) {
 
   horariosDisponiveis.forEach((hora) => {
 
-    const ocupado = ocupados.some((evento) =>
-      hora >= evento.inicio && hora < evento.fim
-    );
-
-    if (!ocupado) {
-      const opcao = document.createElement("option");
-      opcao.value = hora;
-      opcao.textContent = hora;
-      horario.appendChild(opcao);
-      livres++;
-    }
-  });
-
-  if (livres === 0) {
-    horario.innerHTML =
-      '<option value="">Nenhum horário disponível</option>';
-    horario.disabled = true;
-  } else {
-    horario.disabled = false;
-  }
-}
-
-dia.addEventListener("change", async () => {
-
-  horario.disabled = true;
-  horario.innerHTML =
-    '<option value="">Consultando horários...</option>';
-
-  if (!dia.value) {
-    horario.innerHTML =
-      '<option value="">Escolha uma data</option>';
-    return;
-  }
-
-  try {
-
-    const url =
-      `${AGENDA_API_URL}?data=${encodeURIComponent(dia.value)}&t=${Date.now()}`;
-
-    const resposta = await fetch(url);
-
-    if (!resposta.ok) {
-      throw new Error("Falha ao consultar agenda");
-    }
-
-    const dados = await resposta.json();
-
-    const ocupados = Array.isArray(dados.ocupados)
-      ? dados.ocupados
-      : [];
-
-    horario.innerHTML =
-      '<option value="">Selecione um horário</option>';
-
-    horariosDisponiveis.forEach((hora) => {
-
-      const estaOcupado = ocupados.some((evento) =>
-        hora >= evento.inicio && hora < evento.fim
-      );
-
-      if (!estaOcupado) {
-        const opcao = document.createElement("option");
-// ========================================
-// DATA E HORÁRIO + GOOGLE AGENDA
-// ========================================
-
-// Impede selecionar datas anteriores a hoje
-const hoje = new Date();
-const ano = hoje.getFullYear();
-const mes = String(hoje.getMonth() + 1).padStart(2, "0");
-const dataHoje = String(hoje.getDate()).padStart(2, "0");
-
-dia.min = `${ano}-${mes}-${dataHoje}`;
-
-
-// Monta a lista de horários disponíveis
-function mostrarHorarios(ocupados = []) {
-
-  horario.innerHTML =
-    '<option value="">Selecione um horário</option>';
-
-  let quantidadeLivres = 0;
-
-  horariosDisponiveis.forEach((hora) => {
-
-    const estaOcupado = ocupados.some((evento) => {
+    const ocupado = ocupados.some((evento) => {
 
       if (!evento || !evento.inicio || !evento.fim) {
         return false;
@@ -138,7 +52,7 @@ function mostrarHorarios(ocupados = []) {
       return hora >= evento.inicio && hora < evento.fim;
     });
 
-    if (!estaOcupado) {
+    if (!ocupado) {
 
       const opcao = document.createElement("option");
 
@@ -147,12 +61,74 @@ function mostrarHorarios(ocupados = []) {
 
       horario.appendChild(opcao);
 
-      quantidadeLivres++;
+      livres++;
     }
-
   });
 
+  if (livres > 0) {
 
+    horario.disabled = false;
+
+  } else {
+
+    horario.innerHTML =
+      '<option value="">Nenhum horário disponível</option>';
+
+    horario.disabled = true;
+  }
+}
+
+dia.addEventListener("change", async () => {
+
+  if (!dia.value) {
+
+    horario.innerHTML =
+      '<option value="">Escolha uma data</option>';
+
+    horario.disabled = true;
+
+    return;
+  }
+
+  // Libera imediatamente
+  mostrarHorarios([]);
+
+  try {
+
+    const url =
+      `${AGENDA_API_URL}?data=${encodeURIComponent(dia.value)}&t=${Date.now()}`;
+
+    const resposta = await fetch(url, {
+      method: "GET",
+      redirect: "follow",
+      cache: "no-store"
+    });
+
+    if (!resposta.ok) {
+      throw new Error("Falha ao consultar a agenda.");
+    }
+
+    const dados = await resposta.json();
+
+    if (dados.sucesso === false) {
+      throw new Error(dados.erro || "Erro retornado pela agenda.");
+    }
+
+    const ocupados =
+      Array.isArray(dados.ocupados)
+        ? dados.ocupados
+        : [];
+
+    mostrarHorarios(ocupados);
+
+  } catch (erro) {
+
+    console.error("Erro ao consultar Google Agenda:", erro);
+
+    // Se a Agenda falhar, não trava o formulário
+    mostrarHorarios([]);
+  }
+});
   // Se existem horários, libera o campo
   if (quantidadeLivres > 0) {
 
