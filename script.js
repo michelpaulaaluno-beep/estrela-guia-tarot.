@@ -140,8 +140,7 @@ dia.addEventListener("change", async () => {
   }
 
 });
-  }
-});
+  
 // ========================================
 // FORMULÁRIO / WHATSAPP + PAGAMENTO
 // ========================================
