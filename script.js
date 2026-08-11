@@ -610,7 +610,44 @@ function calcularTotal(
 
   return total;
 }
+// ========================================
+// LIMPA PAGAMENTO QUANDO MUDA A ESCOLHA
+// ========================================
 
+function limparPagamentoGerado() {
+
+  // Remove a caixa do Pix que já foi gerada
+  const caixaPix =
+    document.getElementById("pagamento-pix-gerado");
+
+  if (caixaPix) {
+    caixaPix.remove();
+  }
+
+  // Limpa a forma de pagamento escolhida
+  const campoPagamento =
+    document.getElementById("pagamento");
+
+  if (campoPagamento) {
+    campoPagamento.value = "";
+  }
+}
+
+
+// Mudou a consulta?
+// O pagamento anterior não vale mais.
+servico.addEventListener("change", () => {
+  limparPagamentoGerado();
+});
+
+
+// Mudou a modalidade?
+// O pagamento anterior não vale mais.
+document
+  .getElementById("modalidade")
+  .addEventListener("change", () => {
+    limparPagamentoGerado();
+  });
 
 // =====================================================
 // FORMATA DINHEIRO
