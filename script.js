@@ -146,86 +146,38 @@ dia.addEventListener("change", async () => {
 
 // Quando a pessoa escolhe uma data
 dia.addEventListener("change", async () => {
+// ========================================
+// DATA E HORÁRIO
+// ========================================
 
-  // Se não existe data selecionada
+const hoje = new Date();
+const ano = hoje.getFullYear();
+const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+const dataHoje = String(hoje.getDate()).padStart(2, "0");
+
+dia.min = `${ano}-${mes}-${dataHoje}`;
+
+dia.addEventListener("change", () => {
+
+  horario.innerHTML =
+    '<option value="">Selecione um horário</option>';
+
   if (!dia.value) {
-
-    horario.innerHTML =
-      '<option value="">Escolha uma data</option>';
-
     horario.disabled = true;
-
     return;
   }
 
+  horariosDisponiveis.forEach((hora) => {
 
-  // Primeiro libera os horários imediatamente.
-  // Assim a Agenda nunca deixa o formulário travado.
-  mostrarHorarios([]);
+    const opcao = document.createElement("option");
 
+    opcao.value = hora;
+    opcao.textContent = hora;
 
-  try {
+    horario.appendChild(opcao);
+  });
 
-    const url =
-      `${AGENDA_API_URL}?data=${encodeURIComponent(dia.value)}&t=${Date.now()}`;
-
-    const resposta = await fetch(url, {
-      method: "GET",
-      redirect: "follow",
-      cache: "no-store"
-    });
-
-
-    if (!resposta.ok) {
-      throw new Error(
-        `Erro ao consultar agenda: ${resposta.status}`
-      );
-    }
-
-
-    const texto = await resposta.text();
-
-    let dados;
-
-    try {
-
-      dados = JSON.parse(texto);
-
-    } catch {
-
-      throw new Error(
-        "A resposta da Agenda não está em formato JSON."
-      );
-    }
-
-
-    // Se o Apps Script informar erro,
-    // mantém os horários disponíveis em vez de travar.
-    if (dados.sucesso === false) {
-
-      throw new Error(
-        dados.erro || "Erro retornado pela Google Agenda."
-      );
-    }
-
-
-    const ocupados =
-      Array.isArray(dados.ocupados)
-        ? dados.ocupados
-        : [];
-
-
-    // Atualiza a lista retirando os horários ocupados
-    mostrarHorarios(ocupados);
-
-
-    } catch (erro) {
-
-    console.error("Erro ao consultar Google Agenda:", erro);
-
-    // Se a Agenda falhar, não trava o formulário
-    mostrarHorarios([]);
-  }
+  horario.disabled = false;
 });
 
 // ========================================
