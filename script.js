@@ -328,77 +328,208 @@ async function consultarAgenda(
   // diretamente um array.
 
   if (Array.isArray(dados)) {
+// =====================================================
+// GOOGLE AGENDA + HORÁRIOS
+// =====================================================
 
-    return dados;
+function normalizarHora(valor) {
+  if (!valor) return "";
 
+  const texto = String(valor);
+  const achou = texto.match(/(\d{2}):(\d{2})/);
+
+  return achou
+    ? `${achou[1]}:${achou[2]}`
+    : texto;
+}
+
+
+function mostrarHorarios(ocupados = []) {
+
+  horario.innerHTML =
+    '<option value="">Selecione um horário</option>';
+
+  let livres = 0;
+
+  horariosDisponiveis.forEach((hora) => {
+
+    const ocupado = ocupados.some((evento) => {
+
+      if (!evento) return false;
+
+      const inicio =
+        normalizarHora(evento.inicio);
+
+      const fim =
+        normalizarHora(evento.fim);
+
+      if (!inicio) return false;
+
+      if (fim) {
+        return hora >= inicio && hora < fim;
+      }
+
+      return hora === inicio;
+    });
+
+
+    if (!ocupado) {
+
+      const opcao =
+        document.createElement("option");
+
+      opcao.value = hora;
+      opcao.textContent = hora;
+
+      horario.appendChild(opcao);
+
+      livres++;
+    }
+  });
+
+
+  if (livres > 0) {
+
+    horario.disabled = false;
+
+  } else {
+
+    horario.innerHTML =
+      '<option value="">Nenhum horário disponível</option>';
+
+    horario.disabled = true;
   }
+}
 
 
-  return [];
+async function consultarAgenda(dataSelecionada) {
+
+  const controlador =
+    new AbortController();
+
+  const limite =
+    setTimeout(() => {
+      controlador.abort();
+    }, 4000);
+
+
+  try {
+
+    const url =
+      `${AGENDA_API_URL}?data=${encodeURIComponent(dataSelecionada)}&t=${Date.now()}`;
+
+    const resposta =
+      await fetch(url, {
+        method: "GET",
+        cache: "no-store",
+        signal: controlador.signal
+      });
+
+
+    if (!resposta.ok) {
+      throw new Error(
+        `Agenda respondeu ${resposta.status}`
+      );
+    }
+
+
+    const dados =
+      await resposta.json();
+
+
+    if (dados.sucesso === false) {
+      throw new Error(
+        dados.erro || "Erro na Agenda"
+      );
+    }
+
+
+    return Array.isArray(dados.ocupados)
+      ? dados.ocupados
+      : [];
+
+
+  } finally {
+
+    clearTimeout(limite);
+  }
 }
 
 
 // =====================================================
-// QUANDO A DATA FOR ALTERADA
+// DATA MÍNIMA
 // =====================================================
 
-if (dia && horario) {
+const hojeAgenda = new Date();
 
-  dia.addEventListener(
-    "change",
-    async () => {
+const anoAgenda =
+  hojeAgenda.getFullYear();
 
-      if (!dia.value) {
+const mesAgenda =
+  String(
+    hojeAgenda.getMonth() + 1
+  ).padStart(2, "0");
 
-        horario.disabled = true;
+const diaAgenda =
+  String(
+    hojeAgenda.getDate()
+  ).padStart(2, "0");
 
-        horario.innerHTML =
-          '<option value="">Escolha uma data</option>';
+dia.min =
+  `${anoAgenda}-${mesAgenda}-${diaAgenda}`;
 
-        return;
-      }
+horario.disabled = true;
 
+
+// =====================================================
+// QUANDO ESCOLHER UMA DATA
+// =====================================================
+
+dia.addEventListener(
+  "change",
+  async () => {
+
+    if (!dia.value) {
+
+      horario.innerHTML =
+        '<option value="">Escolha uma data</option>';
 
       horario.disabled = true;
 
-      horario.innerHTML =
-        '<option value="">Consultando horários...</option>';
-
-
-      try {
-
-        const ocupados =
-          await consultarAgenda(
-            dia.value
-          );
-
-
-        mostrarHorarios(
-          ocupados
-        );
-
-
-      } catch (erro) {
-
-        console.error(
-          "Erro ao consultar Google Agenda:",
-          erro
-        );
-
-
-        /*
-        Se a integração com a Agenda falhar,
-        o formulário NÃO fica travado.
-        */
-
-        mostrarHorarios([]);
-
-      }
-
+      return;
     }
-  );
 
-}
+
+    // PRIMEIRO LIBERA.
+    // O GOOGLE NÃO PODE MAIS TRAVAR O FORMULÁRIO.
+    mostrarHorarios([]);
+
+
+    try {
+
+      const ocupados =
+        await consultarAgenda(
+          dia.value
+        );
+
+
+      // Atualiza retirando os ocupados.
+      mostrarHorarios(ocupados);
+
+
+    } catch (erro) {
+
+      console.warn(
+        "Agenda indisponível. Mantendo horários:",
+        erro
+      );
+
+
+      // Falhou? Mantém tudo liberado.
+      mostrarHorarios([]);
+    }
+  }
+);
 
 
 // =====================================================
