@@ -326,13 +326,284 @@ document
     // ========================================
 
     if (
-      dados.pagamento
-        .toLowerCase()
-        .includes("pix")
-    ) {
+// ========================================
+// FORMULÁRIO / WHATSAPP + PAGAMENTO
+// ========================================
 
-      const codigoPix =
-        gerarPixCopiaECola(total);
+// Chave Pix aleatória — Banco do Brasil
+const CHAVE_PIX = "1917b12b-63ee-451d-bb56-0cbe1b5864ac";
+
+// Links Stone por valor
+const linksStone = {
+  15: "https://payment-link-v3.stone.com.br/pl_N2KqwMpYLgjoRzGFPhgd9D0X43WnB6bO",
+  25: "https://payment-link-v3.stone.com.br/pl_pqQWMz3L86nkjXqHozh14PJvAygYEXdm",
+  35: "https://payment-link-v3.stone.com.br/pl_3LabWAXO7rVQ1gaijuvB5920J86YRvNq",
+  40: "https://payment-link-v3.stone.com.br/pl_p7ZMPbg4K3yXa7OtElHnMkqrLaBRd2lj",
+  50: "https://payment-link-v3.stone.com.br/pl_xKYlVjXyqWRDGaECJI5ozEOm1g2wv4NL",
+  60: "https://payment-link-v3.stone.com.br/pl_kXwQ4neJB8mRojcQEtrKP1G73Exga0Zy",
+  70: "https://payment-link-v3.stone.com.br/pl_8OPdlnaBwkjQKPnBcyT1pY2mVWD3oR6e"
+};
+
+
+// ========================================
+// DESCOBRE O VALOR DA CONSULTA
+// ========================================
+
+function obterValorConsulta(textoServico) {
+  const correspondencia =
+    textoServico.match(/R\$\s*(\d+(?:[.,]\d{1,2})?)/i);
+
+  if (!correspondencia) {
+    return null;
+  }
+
+  return Number(
+    correspondencia[1].replace(",", ".")
+  );
+}
+
+
+// ========================================
+// CALCULA VALOR TOTAL
+// ========================================
+
+function calcularTotal(servicoSelecionado, modalidadeSelecionada) {
+
+  const valorConsulta =
+    obterValorConsulta(servicoSelecionado);
+
+  if (valorConsulta === null) {
+    return null;
+  }
+
+  let total = valorConsulta;
+
+  // Soma R$ 10 para atendimento na casa do cliente em Alegrete
+  if (
+    modalidadeSelecionada
+      .toLowerCase()
+      .includes("casa do cliente")
+  ) {
+    total += 10;
+  }
+
+  return total;
+}
+
+
+// ========================================
+// GERA PIX COPIA E COLA
+// ========================================
+
+function campoPix(id, valor) {
+  const tamanho =
+    String(valor.length).padStart(2, "0");
+
+  return id + tamanho + valor;
+}
+
+
+function crc16(payload) {
+
+  let resultado = 0xFFFF;
+
+  for (let i = 0; i < payload.length; i++) {
+
+    resultado ^=
+      payload.charCodeAt(i) << 8;
+
+    for (let j = 0; j < 8; j++) {
+
+      if ((resultado & 0x8000) !== 0) {
+        resultado =
+          (resultado << 1) ^ 0x1021;
+      } else {
+        resultado =
+          resultado << 1;
+      }
+
+      resultado &= 0xFFFF;
+    }
+  }
+
+  return resultado
+    .toString(16)
+    .toUpperCase()
+    .padStart(4, "0");
+}
+
+
+function gerarPixCopiaECola(valor) {
+
+  const gui =
+    campoPix("00", "BR.GOV.BCB.PIX");
+
+  const chave =
+    campoPix("01", CHAVE_PIX);
+
+  const contaPix =
+    campoPix("26", gui + chave);
+
+  const valorFormatado =
+    Number(valor).toFixed(2);
+
+  let payload = "";
+
+  payload += campoPix("00", "01");
+  payload += contaPix;
+  payload += campoPix("52", "0000");
+  payload += campoPix("53", "986");
+  payload += campoPix("54", valorFormatado);
+  payload += campoPix("58", "BR");
+  payload += campoPix("59", "ESTRELA GUIA TAROT");
+  payload += campoPix("60", "ALEGRETE");
+
+  payload += campoPix(
+    "62",
+    campoPix("05", "***")
+  );
+
+  payload += "6304";
+
+  return payload + crc16(payload);
+}
+
+
+// ========================================
+// MOSTRA PAGAMENTO PIX NA TELA
+// ========================================
+
+function mostrarPagamentoPix(codigoPix, total, dados) {
+
+  // Remove uma tela Pix anterior, caso exista
+  const antigo =
+    document.getElementById("pagamento-pix-gerado");
+
+  if (antigo) {
+    antigo.remove();
+  }
+
+
+  const caixa =
+    document.createElement("div");
+
+  caixa.id = "pagamento-pix-gerado";
+
+  caixa.style.marginTop = "20px";
+  caixa.style.padding = "20px";
+  caixa.style.borderRadius = "12px";
+  caixa.style.background = "#ffffff";
+  caixa.style.color = "#222222";
+  caixa.style.textAlign = "center";
+
+
+  const titulo =
+    document.createElement("h3");
+
+  titulo.textContent =
+    "Pagamento via Pix";
+
+
+  const valor =
+    document.createElement("p");
+
+  valor.style.fontSize = "22px";
+  valor.style.fontWeight = "bold";
+
+  valor.textContent =
+    `R$ ${total.toFixed(2).replace(".", ",")}`;
+
+
+  const instrucao =
+    document.createElement("p");
+
+  instrucao.textContent =
+    "Copie o código Pix abaixo e faça o pagamento pelo aplicativo do seu banco.";
+
+
+  const campoCodigo =
+    document.createElement("textarea");
+
+  campoCodigo.value = codigoPix;
+  campoCodigo.readOnly = true;
+  campoCodigo.rows = 5;
+
+  campoCodigo.style.width = "100%";
+  campoCodigo.style.boxSizing = "border-box";
+  campoCodigo.style.padding = "10px";
+  campoCodigo.style.marginTop = "10px";
+
+
+  const botaoCopiar =
+    document.createElement("button");
+
+  botaoCopiar.type = "button";
+  botaoCopiar.className =
+    "botao botao-dourado";
+
+  botaoCopiar.style.marginTop = "12px";
+
+  botaoCopiar.textContent =
+    "Copiar código Pix";
+
+
+  botaoCopiar.addEventListener(
+    "click",
+    async () => {
+
+      try {
+
+        await navigator.clipboard.writeText(
+          codigoPix
+        );
+
+        botaoCopiar.textContent =
+          "✓ Código Pix copiado";
+
+      } catch (erro) {
+
+        campoCodigo.select();
+
+        document.execCommand("copy");
+
+        botaoCopiar.textContent =
+          "✓ Código Pix copiado";
+      }
+    }
+  );
+
+
+  const aviso =
+    document.createElement("p");
+
+  aviso.style.marginTop = "18px";
+
+  aviso.textContent =
+    "Depois de realizar o pagamento, envie o comprovante pelo WhatsApp.";
+
+
+  const botaoWhatsapp =
+    document.createElement("button");
+
+  botaoWhatsapp.type = "button";
+  botaoWhatsapp.className =
+    "botao botao-dourado";
+
+  botaoWhatsapp.style.marginTop = "10px";
+
+  botaoWhatsapp.textContent =
+    "Já paguei — enviar comprovante";
+
+
+  botaoWhatsapp.addEventListener(
+    "click",
+    () => {
+
+      const valorConsulta =
+        obterValorConsulta(dados.servico);
+
+      const temDeslocamento =
+        total > valorConsulta;
 
 
       const mensagem = [
@@ -350,6 +621,230 @@ document
         "",
 
         `Valor da consulta: R$ ${valorConsulta
+          .toFixed(2)
+          .replace(".", ",")}`,
+
+        temDeslocamento
+          ? "Deslocamento: R$ 10,00"
+          : "",
+
+        `TOTAL: R$ ${total
+          .toFixed(2)
+          .replace(".", ",")}`,
+
+        "",
+
+        "Pagamento: PIX",
+
+        "",
+
+        "Cliente informou que realizou o pagamento.",
+
+        "",
+
+        "📎 Enviar comprovante nesta conversa.",
+
+        "",
+
+        "⏳ Status: AGUARDANDO CONFIRMAÇÃO DO PAGAMENTO"
+
+      ]
+        .filter(Boolean)
+        .join("\n");
+
+
+      window.open(
+        `https://wa.me/5555999215944?text=${encodeURIComponent(mensagem)}`,
+        "_blank",
+        "noopener,noreferrer"
+      );
+    }
+  );
+
+
+  caixa.appendChild(titulo);
+  caixa.appendChild(valor);
+  caixa.appendChild(instrucao);
+  caixa.appendChild(campoCodigo);
+  caixa.appendChild(botaoCopiar);
+  caixa.appendChild(aviso);
+  caixa.appendChild(botaoWhatsapp);
+
+
+  document
+    .getElementById("formulario")
+    .appendChild(caixa);
+
+
+  caixa.scrollIntoView({
+    behavior: "smooth",
+    block: "center"
+  });
+}
+
+
+// ========================================
+// ENVIO DO FORMULÁRIO
+// ========================================
+
+document
+  .getElementById("formulario")
+  .addEventListener("submit", (evento) => {
+
+    evento.preventDefault();
+
+
+    const dados = {
+
+      nome:
+        document
+          .getElementById("nome")
+          .value
+          .trim(),
+
+      whatsapp:
+        document
+          .getElementById("whatsapp")
+          .value
+          .trim(),
+
+      servico:
+        servico.value,
+
+      modalidade:
+        document
+          .getElementById("modalidade")
+          .value,
+
+      dia:
+        dia.value,
+
+      horario:
+        horario.value,
+
+      pagamento:
+        document
+          .getElementById("pagamento")
+          .value
+    };
+
+
+    // Confere os campos
+    if (
+      !dados.nome ||
+      !dados.whatsapp ||
+      !dados.servico ||
+      !dados.modalidade ||
+      !dados.dia ||
+      !dados.horario ||
+      !dados.pagamento
+    ) {
+
+      alert(
+        "Preencha todos os dados do agendamento."
+      );
+
+      return;
+    }
+
+
+    const valorConsulta =
+      obterValorConsulta(dados.servico);
+
+    const total =
+      calcularTotal(
+        dados.servico,
+        dados.modalidade
+      );
+
+
+    if (
+      valorConsulta === null ||
+      total === null
+    ) {
+
+      alert(
+        "Não foi possível calcular o valor."
+      );
+
+      return;
+    }
+
+
+    // ========================================
+    // PAGAMENTO PIX
+    // ========================================
+
+    if (
+      dados.pagamento
+        .toLowerCase()
+        .includes("pix")
+    ) {
+
+      const codigoPix =
+        gerarPixCopiaECola(total);
+
+      mostrarPagamentoPix(
+        codigoPix,
+        total,
+        dados
+      );
+
+      // IMPORTANTE:
+      // Não abre WhatsApp automaticamente.
+      return;
+    }
+
+
+    // ========================================
+    // PAGAMENTO CARTÃO / STONE
+    // ========================================
+
+    if (
+      dados.pagamento
+        .toLowerCase()
+        .includes("cart")
+    ) {
+
+      const linkPagamento =
+        linksStone[total];
+
+
+      if (!linkPagamento) {
+
+        alert(
+          `Não existe link Stone configurado para R$ ${total
+            .toFixed(2)
+            .replace(".", ",")}.`
+        );
+
+        return;
+      }
+
+
+      localStorage.setItem(
+        "ultimoAgendamento",
+        JSON.stringify({
+          ...dados,
+          valorConsulta,
+          total
+        })
+      );
+
+
+      // CARTÃO:
+      // abre diretamente a página da Stone.
+      window.location.href =
+        linkPagamento;
+
+      return;
+    }
+
+
+    alert(
+      "Escolha Pix ou Cartão de crédito."
+    );
+  });
          
 
 // ========================================
