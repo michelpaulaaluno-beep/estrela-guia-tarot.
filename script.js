@@ -1,8 +1,21 @@
+// =====================================================
+// ESTRELA GUIA TAROT — SCRIPT.JS COMPLETO
+// =====================================================
 
-// ========================================
-// HORÁRIOS DE ATENDIMENTO
-// ========================================
-const AGENDA_API_URL = "https://script.google.com/macros/s/AKfycbwudF762R7finLbS9O9lpUltmN38aIH8AU0gumE9dLi0UgQz9tccHybgS7dyrO-eNc3Yw/exec";
+
+// =====================================================
+// CONFIGURAÇÕES
+// =====================================================
+
+const AGENDA_API_URL =
+  "https://script.google.com/macros/s/AKfycbwudF762R7finLbS9O9lpUltmN38aIH8AU0gumE9dLi0UgQz9tccHybgS7dyrO-eNc3Yw/exec";
+
+const CHAVE_PIX =
+  "1917b12b-63ee-451d-bb56-0cbe1b5864ac";
+
+const WHATSAPP_ESTRELA_GUIA =
+  "5555999215944";
+
 const horariosDisponiveis = [
   "08:00",
   "09:00",
@@ -17,414 +30,548 @@ const horariosDisponiveis = [
   "20:00"
 ];
 
-const dia = document.getElementById("dia");
-const horario = document.getElementById("horario");
-const servico = document.getElementById("servico");
 
-// Ano automático no rodapé
-document.getElementById("ano").textContent = new Date().getFullYear();
+// =====================================================
+// LINKS STONE
+// =====================================================
 
-// ========================================
-// DATA E HORÁRIO
-// ========================================
+const linksStone = {
+  15: "https://payment-link-v3.stone.com.br/pl_N2KqwMpYLgjoRzGFPhgd9D0X43WnB6bO",
+
+  25: "https://payment-link-v3.stone.com.br/pl_pqQWMz3L86nkjXqHozh14PJvAygYEXdm",
+
+  35: "https://payment-link-v3.stone.com.br/pl_3LabWAXO7rVQ1gaijuvB5920J86YRvNq",
+
+  40: "https://payment-link-v3.stone.com.br/pl_p7ZMPbg4K3yXa7OtElHnMkqrLaBRd2lj",
+
+  50: "https://payment-link-v3.stone.com.br/pl_xKYlVjXyqWRDGaECJI5ozEOm1g2wv4NL",
+
+  60: "https://payment-link-v3.stone.com.br/pl_kXwQ4neJB8mRojcQEtrKP1G73Exga0Zy",
+
+  70: "https://payment-link-v3.stone.com.br/pl_8OPdlnaBwkjQKPnBcyT1pY2mVWD3oR6e"
+};
+
+
+// =====================================================
+// ELEMENTOS DO SITE
+// =====================================================
+
+const dia =
+  document.getElementById("dia");
+
+const horario =
+  document.getElementById("horario");
+
+const servico =
+  document.getElementById("servico");
+
+const formulario =
+  document.getElementById("formulario");
+
+const modalidade =
+  document.getElementById("modalidade");
+
+const pagamento =
+  document.getElementById("pagamento");
+
+const nome =
+  document.getElementById("nome");
+
+const whatsapp =
+  document.getElementById("whatsapp");
+
+
+// =====================================================
+// ANO AUTOMÁTICO
+// =====================================================
+
+const elementoAno =
+  document.getElementById("ano");
+
+if (elementoAno) {
+  elementoAno.textContent =
+    new Date().getFullYear();
+}
+
+
+// =====================================================
+// DATA MÍNIMA
+// =====================================================
 
 const hoje = new Date();
-const ano = hoje.getFullYear();
-const mes = String(hoje.getMonth() + 1).padStart(2, "0");
-const dataHoje = String(hoje.getDate()).padStart(2, "0");
 
-dia.min = `${ano}-${mes}-${dataHoje}`;
+const anoAtual =
+  hoje.getFullYear();
 
-dia.addEventListener("change", () => {
+const mesAtual =
+  String(
+    hoje.getMonth() + 1
+  ).padStart(2, "0");
+
+const diaAtual =
+  String(
+    hoje.getDate()
+  ).padStart(2, "0");
+
+if (dia) {
+  dia.min =
+    `${anoAtual}-${mesAtual}-${diaAtual}`;
+}
+
+
+// =====================================================
+// NORMALIZA HORÁRIO VINDO DA AGENDA
+// =====================================================
+
+function normalizarHora(valor) {
+
+  if (!valor) {
+    return "";
+  }
+
+  const texto =
+    String(valor);
+
+  const correspondencia =
+    texto.match(/(\d{2}):(\d{2})/);
+
+  if (!correspondencia) {
+    return texto;
+  }
+
+  return (
+    correspondencia[1] +
+    ":" +
+    correspondencia[2]
+  );
+}
+
+
+// =====================================================
+// MOSTRAR HORÁRIOS
+// =====================================================
+
+function mostrarHorarios(ocupados = []) {
+
+  if (!horario) {
+    return;
+  }
 
   horario.innerHTML =
     '<option value="">Selecione um horário</option>';
 
-  if (!dia.value) {
-    horario.disabled = true;
-    return;
-  }
-
-  horariosDisponiveis.forEach((hora) => {
-
-    const opcao = document.createElement("option");
-
-    opcao.value = hora;
-    opcao.textContent = hora;
-
-    horario.appendChild(opcao);
-  });
-
-  horario.disabled = false;
-});
-
-// ========================================
-// FORMULÁRIO / WHATSAPP + PAGAMENTO
-// ========================================
-
-// Chave Pix aleatória — Banco do Brasil
-const CHAVE_PIX = "1917b12b-63ee-451d-bb56-0cbe1b5864ac";
-
-// Links permanentes Stone por valor
-const linksStone = {
-  15: "https://payment-link-v3.stone.com.br/pl_N2KqwMpYLgjoRzGFPhgd9D0X43WnB6bO",
-  25: "https://payment-link-v3.stone.com.br/pl_pqQWMz3L86nkjXqHozh14PJvAygYEXdm",
-  35: "https://payment-link-v3.stone.com.br/pl_3LabWAXO7rVQ1gaijuvB5920J86YRvNq",
-  40: "https://payment-link-v3.stone.com.br/pl_p7ZMPbg4K3yXa7OtElHnMkqrLaBRd2lj",
-  50: "https://payment-link-v3.stone.com.br/pl_xKYlVjXyqWRDGaECJI5ozEOm1g2wv4NL",
-  60: "https://payment-link-v3.stone.com.br/pl_kXwQ4neJB8mRojcQEtrKP1G73Exga0Zy",
-  70: "https://payment-link-v3.stone.com.br/pl_8OPdlnaBwkjQKPnBcyT1pY2mVWD3oR6e"
-};
+  let livres = 0;
 
 
-// ========================================
-// DESCOBRE VALOR DA CONSULTA
-// ========================================
+  horariosDisponiveis.forEach(
+    (hora) => {
 
-function obterValorConsulta(textoServico) {
+      const estaOcupado =
+        ocupados.some(
+          (evento) => {
 
-  const correspondencia =
-    textoServico.match(/R\$\s*(\d+(?:[.,]\d{1,2})?)/i);
+            if (!evento) {
+              return false;
+            }
 
-  if (!correspondencia) {
-    return null;
-  }
+            const inicio =
+              normalizarHora(
+                evento.inicio
+              );
 
-  return Number(
-    correspondencia[1].replace(",", ".")
-  );
-}
-
-
-// ========================================
-// CALCULA TOTAL
-// ========================================
-
-function calcularTotal(servicoSelecionado, modalidadeSelecionada) {
-
-  const valorConsulta =
-    obterValorConsulta(servicoSelecionado);
-
-  if (valorConsulta === null) {
-    return null;
-  }
-
-  let total = valorConsulta;
-
-  // Atendimento na casa do cliente em Alegrete
-  if (
-    modalidadeSelecionada
-      .toLowerCase()
-      .includes("casa do cliente")
-  ) {
-    total += 10;
-  }
-
-  return total;
-}
+            const fim =
+              normalizarHora(
+                evento.fim
+              );
 
 
-// ========================================
-// FUNÇÕES PARA GERAR PIX COPIA E COLA
-// ========================================
-
-function campoPix(id, valor) {
-
-  const tamanho =
-    String(valor.length).padStart(2, "0");
-
-  return id + tamanho + valor;
-}
+            if (!inicio) {
+              return false;
+            }
 
 
-function crc16(payload) {
+            // Caso a API forneça início e fim
+            if (fim) {
 
-  let resultado = 0xFFFF;
+              return (
+                hora >= inicio &&
+                hora < fim
+              );
+            }
 
-  for (let i = 0; i < payload.length; i++) {
 
-    resultado ^=
-      payload.charCodeAt(i) << 8;
+            // Caso forneça somente início
+            return hora === inicio;
 
-    for (let j = 0; j < 8; j++) {
+          }
+        );
 
-      if ((resultado & 0x8000) !== 0) {
 
-        resultado =
-          (resultado << 1) ^ 0x1021;
+      if (!estaOcupado) {
 
-      } else {
+        const opcao =
+          document.createElement(
+            "option"
+          );
 
-        resultado = resultado << 1;
+        opcao.value = hora;
+        opcao.textContent = hora;
+
+        horario.appendChild(
+          opcao
+        );
+
+        livres++;
       }
 
-      resultado &= 0xFFFF;
     }
+  );
+
+
+  if (livres > 0) {
+
+    horario.disabled = false;
+
+  } else {
+
+    horario.innerHTML =
+      '<option value="">Nenhum horário disponível</option>';
+
+    horario.disabled = true;
+
+  }
+}
+
+
+// =====================================================
+// CONSULTAR GOOGLE AGENDA
+// =====================================================
+
+async function consultarAgenda(
+  dataSelecionada
+) {
+
+  const url =
+    `${AGENDA_API_URL}?data=${encodeURIComponent(dataSelecionada)}&t=${Date.now()}`;
+
+
+  const resposta =
+    await fetch(
+      url,
+      {
+        method: "GET",
+        cache: "no-store",
+        redirect: "follow"
+      }
+    );
+
+
+  if (!resposta.ok) {
+
+    throw new Error(
+      `Erro HTTP ${resposta.status}`
+    );
+
   }
 
-  return resultado
-    .toString(16)
-    .toUpperCase()
-    .padStart(4, "0");
+
+  const texto =
+    await resposta.text();
+
+
+  let dados;
+
+
+  try {
+
+    dados =
+      JSON.parse(texto);
+
+  } catch (erro) {
+
+    console.error(
+      "Resposta da Agenda:",
+      texto
+    );
+
+    throw new Error(
+      "A Agenda não retornou JSON válido."
+    );
+
+  }
+
+
+  if (
+    dados &&
+    dados.sucesso === false
+  ) {
+
+    throw new Error(
+      dados.erro ||
+      "Erro retornado pela Agenda."
+    );
+
+  }
+
+
+  if (
+    dados &&
+    Array.isArray(dados.ocupados)
+  ) {
+
+    return dados.ocupados;
+
+  }
+
+
+  // Aceita também API retornando
+  // diretamente um array.
+
+  if (Array.isArray(dados)) {
+
+    return dados;
+
+  }
+
+
+  return [];
 }
 
 
-function gerarPixCopiaECola(valor) {
+// =====================================================
+// QUANDO A DATA FOR ALTERADA
+// =====================================================
 
-  // GUI do Pix
-  const gui =
-    campoPix("00", "BR.GOV.BCB.PIX");
+if (dia && horario) {
 
-  // Chave Pix
-  const chave =
-    campoPix("01", CHAVE_PIX);
+  dia.addEventListener(
+    "change",
+    async () => {
 
-  const contaPix =
-    campoPix("26", gui + chave);
+      if (!dia.value) {
 
-  const valorFormatado =
-    Number(valor).toFixed(2);
+        horario.disabled = true;
 
-  let payload = "";
+        horario.innerHTML =
+          '<option value="">Escolha uma data</option>';
 
-  payload += campoPix("00", "01");
-  payload += contaPix;
+        return;
+      }
 
-  // MCC padrão
-  payload += campoPix("52", "0000");
 
-  // Moeda BRL
-  payload += campoPix("53", "986");
+      horario.disabled = true;
 
-  // Valor
-  payload += campoPix("54", valorFormatado);
+      horario.innerHTML =
+        '<option value="">Consultando horários...</option>';
 
-  // País
-  payload += campoPix("58", "BR");
 
-  // Nome do recebedor
-  payload += campoPix(
-    "59",
-    "ESTRELA GUIA TAROT"
+      try {
+
+        const ocupados =
+          await consultarAgenda(
+            dia.value
+          );
+
+
+        mostrarHorarios(
+          ocupados
+        );
+
+
+      } catch (erro) {
+
+        console.error(
+          "Erro ao consultar Google Agenda:",
+          erro
+        );
+
+
+        /*
+        Se a integração com a Agenda falhar,
+        o formulário NÃO fica travado.
+        */
+
+        mostrarHorarios([]);
+
+      }
+
+    }
   );
 
-  // Cidade
-  payload += campoPix(
-    "60",
-    "ALEGRETE"
-  );
-
-  // Identificador
-  payload += campoPix(
-    "62",
-    campoPix("05", "***")
-  );
-
-  // Campo CRC
-  payload += "6304";
-
-  return payload + crc16(payload);
 }
 
 
-// ========================================
-// ENVIO DO FORMULÁRIO
-// ========================================
+// =====================================================
+// VALOR DA CONSULTA
+// =====================================================
 
-document
-  .getElementById("formulario")
-  .addEventListener("submit", (evento) => {
+function obterValorConsulta(
+  textoServico
+) {
 
-    evento.preventDefault();
-
-    const dados = {
-
-      nome:
-        document
-          .getElementById("nome")
-          .value
-          .trim(),
-
-      whatsapp:
-        document
-          .getElementById("whatsapp")
-          .value
-          .trim(),
-
-      servico:
-        servico.value,
-
-      modalidade:
-        document
-          .getElementById("modalidade")
-          .value,
-
-      dia:
-        dia.value,
-
-      horario:
-        horario.value,
-
-      pagamento:
-        document
-          .getElementById("pagamento")
-          .value
-    };
+  if (!textoServico) {
+    return null;
+  }
 
 
-    // ========================================
-    // VALIDAÇÕES
-    // ========================================
-
-    if (
-      !dados.nome ||
-      !dados.whatsapp ||
-      !dados.servico ||
-      !dados.modalidade ||
-      !dados.dia ||
-      !dados.horario ||
-      !dados.pagamento
-    ) {
-
-      alert(
-        "Preencha todos os dados do agendamento."
-      );
-
-      return;
-    }
-
-
-    const valorConsulta =
-      obterValorConsulta(dados.servico);
-
-    const total =
-      calcularTotal(
-        dados.servico,
-        dados.modalidade
-      );
-
-
-    if (
-      valorConsulta === null ||
-      total === null
-    ) {
-
-      alert(
-        "Não foi possível calcular o valor da consulta."
-      );
-
-      return;
-    }
-
-
-    const temDeslocamento =
-      total > valorConsulta;
-
-
-    // ========================================
-    // PIX
-    // ========================================
-
-    if (
-// ========================================
-// FORMULÁRIO / WHATSAPP + PAGAMENTO
-// ========================================
-
-// Chave Pix aleatória — Banco do Brasil
-const CHAVE_PIX = "1917b12b-63ee-451d-bb56-0cbe1b5864ac";
-
-// Links Stone por valor
-const linksStone = {
-  15: "https://payment-link-v3.stone.com.br/pl_N2KqwMpYLgjoRzGFPhgd9D0X43WnB6bO",
-  25: "https://payment-link-v3.stone.com.br/pl_pqQWMz3L86nkjXqHozh14PJvAygYEXdm",
-  35: "https://payment-link-v3.stone.com.br/pl_3LabWAXO7rVQ1gaijuvB5920J86YRvNq",
-  40: "https://payment-link-v3.stone.com.br/pl_p7ZMPbg4K3yXa7OtElHnMkqrLaBRd2lj",
-  50: "https://payment-link-v3.stone.com.br/pl_xKYlVjXyqWRDGaECJI5ozEOm1g2wv4NL",
-  60: "https://payment-link-v3.stone.com.br/pl_kXwQ4neJB8mRojcQEtrKP1G73Exga0Zy",
-  70: "https://payment-link-v3.stone.com.br/pl_8OPdlnaBwkjQKPnBcyT1pY2mVWD3oR6e"
-};
-
-
-// ========================================
-// DESCOBRE O VALOR DA CONSULTA
-// ========================================
-
-function obterValorConsulta(textoServico) {
   const correspondencia =
-    textoServico.match(/R\$\s*(\d+(?:[.,]\d{1,2})?)/i);
+    textoServico.match(
+      /R\$\s*(\d+(?:[.,]\d{1,2})?)/i
+    );
+
 
   if (!correspondencia) {
     return null;
   }
 
+
   return Number(
-    correspondencia[1].replace(",", ".")
+    correspondencia[1]
+      .replace(",", ".")
   );
 }
 
 
-// ========================================
-// CALCULA VALOR TOTAL
-// ========================================
+// =====================================================
+// CALCULAR TOTAL
+// =====================================================
 
-function calcularTotal(servicoSelecionado, modalidadeSelecionada) {
+function calcularTotal(
+  servicoSelecionado,
+  modalidadeSelecionada
+) {
 
   const valorConsulta =
-    obterValorConsulta(servicoSelecionado);
+    obterValorConsulta(
+      servicoSelecionado
+    );
+
 
   if (valorConsulta === null) {
     return null;
   }
 
-  let total = valorConsulta;
 
-  // Soma R$ 10 para atendimento na casa do cliente em Alegrete
+  let total =
+    valorConsulta;
+
+
+  /*
+  SOMA R$ 10 SOMENTE PARA:
+
+  Presencial na casa do cliente
+  em Alegrete (+ R$ 10)
+  */
+
   if (
+    modalidadeSelecionada &&
     modalidadeSelecionada
       .toLowerCase()
-      .includes("casa do cliente")
+      .includes(
+        "casa do cliente"
+      )
   ) {
+
     total += 10;
+
   }
+
 
   return total;
 }
 
 
-// ========================================
-// GERA PIX COPIA E COLA
-// ========================================
+// =====================================================
+// FORMATA DINHEIRO
+// =====================================================
 
-function campoPix(id, valor) {
-  const tamanho =
-    String(valor.length).padStart(2, "0");
+function formatarDinheiro(valor) {
 
-  return id + tamanho + valor;
+  return Number(valor)
+    .toFixed(2)
+    .replace(".", ",");
+
 }
 
 
+// =====================================================
+// PIX — CAMPO EMV
+// =====================================================
+
+function campoPix(
+  id,
+  valor
+) {
+
+  const texto =
+    String(valor);
+
+
+  const tamanho =
+    String(
+      texto.length
+    ).padStart(2, "0");
+
+
+  return (
+    id +
+    tamanho +
+    texto
+  );
+}
+
+
+// =====================================================
+// PIX — CRC16
+// =====================================================
+
 function crc16(payload) {
 
-  let resultado = 0xFFFF;
+  let resultado =
+    0xFFFF;
 
-  for (let i = 0; i < payload.length; i++) {
+
+  for (
+    let i = 0;
+    i < payload.length;
+    i++
+  ) {
 
     resultado ^=
-      payload.charCodeAt(i) << 8;
+      payload.charCodeAt(i)
+      << 8;
 
-    for (let j = 0; j < 8; j++) {
 
-      if ((resultado & 0x8000) !== 0) {
+    for (
+      let j = 0;
+      j < 8;
+      j++
+    ) {
+
+      if (
+        (resultado & 0x8000)
+        !== 0
+      ) {
+
         resultado =
-          (resultado << 1) ^ 0x1021;
+          (resultado << 1)
+          ^ 0x1021;
+
       } else {
+
         resultado =
           resultado << 1;
+
       }
 
-      resultado &= 0xFFFF;
+
+      resultado &=
+        0xFFFF;
+
     }
+
   }
+
 
   return resultado
     .toString(16)
@@ -433,115 +580,351 @@ function crc16(payload) {
 }
 
 
-function gerarPixCopiaECola(valor) {
+// =====================================================
+// GERAR PIX COPIA E COLA
+// =====================================================
+
+function gerarPixCopiaECola(
+  valor
+) {
 
   const gui =
-    campoPix("00", "BR.GOV.BCB.PIX");
+    campoPix(
+      "00",
+      "BR.GOV.BCB.PIX"
+    );
+
 
   const chave =
-    campoPix("01", CHAVE_PIX);
+    campoPix(
+      "01",
+      CHAVE_PIX
+    );
+
 
   const contaPix =
-    campoPix("26", gui + chave);
+    campoPix(
+      "26",
+      gui + chave
+    );
+
 
   const valorFormatado =
-    Number(valor).toFixed(2);
+    Number(valor)
+      .toFixed(2);
+
 
   let payload = "";
 
-  payload += campoPix("00", "01");
-  payload += contaPix;
-  payload += campoPix("52", "0000");
-  payload += campoPix("53", "986");
-  payload += campoPix("54", valorFormatado);
-  payload += campoPix("58", "BR");
-  payload += campoPix("59", "ESTRELA GUIA TAROT");
-  payload += campoPix("60", "ALEGRETE");
 
-  payload += campoPix(
-    "62",
-    campoPix("05", "***")
+  // Payload Format Indicator
+  payload +=
+    campoPix(
+      "00",
+      "01"
+    );
+
+
+  // Merchant Account Information
+  payload +=
+    contaPix;
+
+
+  // Merchant Category Code
+  payload +=
+    campoPix(
+      "52",
+      "0000"
+    );
+
+
+  // Moeda BRL
+  payload +=
+    campoPix(
+      "53",
+      "986"
+    );
+
+
+  // Valor
+  payload +=
+    campoPix(
+      "54",
+      valorFormatado
+    );
+
+
+  // País
+  payload +=
+    campoPix(
+      "58",
+      "BR"
+    );
+
+
+  // Nome
+  payload +=
+    campoPix(
+      "59",
+      "ESTRELA GUIA TAROT"
+    );
+
+
+  // Cidade
+  payload +=
+    campoPix(
+      "60",
+      "ALEGRETE"
+    );
+
+
+  // Transaction ID
+  payload +=
+    campoPix(
+      "62",
+      campoPix(
+        "05",
+        "***"
+      )
+    );
+
+
+  // CRC
+  payload +=
+    "6304";
+
+
+  return (
+    payload +
+    crc16(payload)
   );
-
-  payload += "6304";
-
-  return payload + crc16(payload);
 }
 
 
-// ========================================
-// MOSTRA PAGAMENTO PIX NA TELA
-// ========================================
+// =====================================================
+// MONTAR MENSAGEM DO WHATSAPP
+// =====================================================
 
-function mostrarPagamentoPix(codigoPix, total, dados) {
+function montarMensagem(
+  dados,
+  valorConsulta,
+  total,
+  formaPagamento
+) {
 
-  // Remove uma tela Pix anterior, caso exista
-  const antigo =
-    document.getElementById("pagamento-pix-gerado");
+  const temDeslocamento =
+    total > valorConsulta;
 
-  if (antigo) {
-    antigo.remove();
+
+  return [
+
+    "✨ SOLICITAÇÃO DE AGENDAMENTO — ESTRELA GUIA TAROT",
+
+    "",
+
+    `Nome: ${dados.nome}`,
+
+    `WhatsApp: ${dados.whatsapp}`,
+
+    `Consulta: ${dados.servico}`,
+
+    `Modalidade: ${dados.modalidade}`,
+
+    `Data: ${dados.dia}`,
+
+    `Horário: ${dados.horario}`,
+
+    "",
+
+    `Valor da consulta: R$ ${formatarDinheiro(valorConsulta)}`,
+
+    temDeslocamento
+      ? "Deslocamento: R$ 10,00"
+      : "",
+
+    `TOTAL: R$ ${formatarDinheiro(total)}`,
+
+    "",
+
+    `Pagamento: ${formaPagamento}`,
+
+    "",
+
+    "⏳ Status: AGUARDANDO CONFIRMAÇÃO DO PAGAMENTO"
+
+  ]
+    .filter(Boolean)
+    .join("\n");
+}
+
+
+// =====================================================
+// ABRIR WHATSAPP
+// =====================================================
+
+function abrirWhatsapp(
+  mensagem
+) {
+
+  const url =
+    `https://wa.me/${WHATSAPP_ESTRELA_GUIA}?text=${encodeURIComponent(mensagem)}`;
+
+
+  window.open(
+    url,
+    "_blank",
+    "noopener,noreferrer"
+  );
+
+}
+
+
+// =====================================================
+// MOSTRAR PIX NA TELA
+// =====================================================
+
+function mostrarPagamentoPix(
+  codigoPix,
+  total,
+  dados,
+  valorConsulta
+) {
+
+  const anterior =
+    document.getElementById(
+      "pagamento-pix-gerado"
+    );
+
+
+  if (anterior) {
+    anterior.remove();
   }
 
 
   const caixa =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
 
-  caixa.id = "pagamento-pix-gerado";
 
-  caixa.style.marginTop = "20px";
-  caixa.style.padding = "20px";
-  caixa.style.borderRadius = "12px";
-  caixa.style.background = "#ffffff";
-  caixa.style.color = "#222222";
-  caixa.style.textAlign = "center";
+  caixa.id =
+    "pagamento-pix-gerado";
 
+
+  caixa.style.marginTop =
+    "24px";
+
+  caixa.style.padding =
+    "22px";
+
+  caixa.style.borderRadius =
+    "14px";
+
+  caixa.style.background =
+    "#ffffff";
+
+  caixa.style.color =
+    "#222222";
+
+  caixa.style.textAlign =
+    "center";
+
+
+  // -------------------------------
 
   const titulo =
-    document.createElement("h3");
+    document.createElement(
+      "h3"
+    );
+
 
   titulo.textContent =
     "Pagamento via Pix";
 
 
-  const valor =
-    document.createElement("p");
+  // -------------------------------
 
-  valor.style.fontSize = "22px";
-  valor.style.fontWeight = "bold";
+  const valor =
+    document.createElement(
+      "p"
+    );
+
+
+  valor.style.fontSize =
+    "26px";
+
+  valor.style.fontWeight =
+    "bold";
+
 
   valor.textContent =
-    `R$ ${total.toFixed(2).replace(".", ",")}`;
+    `R$ ${formatarDinheiro(total)}`;
 
+
+  // -------------------------------
 
   const instrucao =
-    document.createElement("p");
+    document.createElement(
+      "p"
+    );
+
 
   instrucao.textContent =
-    "Copie o código Pix abaixo e faça o pagamento pelo aplicativo do seu banco.";
+    "Copie o código Pix abaixo e faça o pagamento no aplicativo do seu banco.";
 
 
-  const campoCodigo =
-    document.createElement("textarea");
+  // -------------------------------
 
-  campoCodigo.value = codigoPix;
-  campoCodigo.readOnly = true;
-  campoCodigo.rows = 5;
+  const codigo =
+    document.createElement(
+      "textarea"
+    );
 
-  campoCodigo.style.width = "100%";
-  campoCodigo.style.boxSizing = "border-box";
-  campoCodigo.style.padding = "10px";
-  campoCodigo.style.marginTop = "10px";
 
+  codigo.value =
+    codigoPix;
+
+
+  codigo.readOnly =
+    true;
+
+
+  codigo.rows =
+    5;
+
+
+  codigo.style.width =
+    "100%";
+
+  codigo.style.boxSizing =
+    "border-box";
+
+  codigo.style.padding =
+    "12px";
+
+  codigo.style.marginTop =
+    "10px";
+
+
+  // -------------------------------
 
   const botaoCopiar =
-    document.createElement("button");
+    document.createElement(
+      "button"
+    );
 
-  botaoCopiar.type = "button";
+
+  botaoCopiar.type =
+    "button";
+
+
   botaoCopiar.className =
     "botao botao-dourado";
 
-  botaoCopiar.style.marginTop = "12px";
+
+  botaoCopiar.style.marginTop =
+    "12px";
+
 
   botaoCopiar.textContent =
     "Copiar código Pix";
@@ -553,43 +936,83 @@ function mostrarPagamentoPix(codigoPix, total, dados) {
 
       try {
 
-        await navigator.clipboard.writeText(
-          codigoPix
-        );
+        await navigator.clipboard
+          .writeText(
+            codigoPix
+          );
+
 
         botaoCopiar.textContent =
           "✓ Código Pix copiado";
+
 
       } catch (erro) {
 
-        campoCodigo.select();
+        codigo.focus();
 
-        document.execCommand("copy");
+        codigo.select();
 
-        botaoCopiar.textContent =
-          "✓ Código Pix copiado";
+
+        try {
+
+          document.execCommand(
+            "copy"
+          );
+
+
+          botaoCopiar.textContent =
+            "✓ Código Pix copiado";
+
+
+        } catch (erroCopia) {
+
+          alert(
+            "Selecione o código Pix e copie manualmente."
+          );
+
+        }
+
       }
+
     }
   );
 
 
-  const aviso =
-    document.createElement("p");
+  // -------------------------------
 
-  aviso.style.marginTop = "18px";
+  const aviso =
+    document.createElement(
+      "p"
+    );
+
+
+  aviso.style.marginTop =
+    "20px";
+
 
   aviso.textContent =
-    "Depois de realizar o pagamento, envie o comprovante pelo WhatsApp.";
+    "Depois do pagamento, clique abaixo para enviar o comprovante pelo WhatsApp.";
 
+
+  // -------------------------------
 
   const botaoWhatsapp =
-    document.createElement("button");
+    document.createElement(
+      "button"
+    );
 
-  botaoWhatsapp.type = "button";
+
+  botaoWhatsapp.type =
+    "button";
+
+
   botaoWhatsapp.className =
     "botao botao-dourado";
 
-  botaoWhatsapp.style.marginTop = "10px";
+
+  botaoWhatsapp.style.marginTop =
+    "10px";
+
 
   botaoWhatsapp.textContent =
     "Já paguei — enviar comprovante";
@@ -599,260 +1022,287 @@ function mostrarPagamentoPix(codigoPix, total, dados) {
     "click",
     () => {
 
-      const valorConsulta =
-        obterValorConsulta(dados.servico);
-
-      const temDeslocamento =
-        total > valorConsulta;
-
-
-      const mensagem = [
-
-        "✨ SOLICITAÇÃO DE AGENDAMENTO — ESTRELA GUIA TAROT",
-        "",
-
-        `Nome: ${dados.nome}`,
-        `WhatsApp: ${dados.whatsapp}`,
-        `Consulta: ${dados.servico}`,
-        `Modalidade: ${dados.modalidade}`,
-        `Data: ${dados.dia}`,
-        `Horário: ${dados.horario}`,
-
-        "",
-
-        `Valor da consulta: R$ ${valorConsulta
-          .toFixed(2)
-          .replace(".", ",")}`,
-
-        temDeslocamento
-          ? "Deslocamento: R$ 10,00"
-          : "",
-
-        `TOTAL: R$ ${total
-          .toFixed(2)
-          .replace(".", ",")}`,
-
-        "",
-
-        "Pagamento: PIX",
-
-        "",
-
-        "Cliente informou que realizou o pagamento.",
-
-        "",
-
-        "📎 Enviar comprovante nesta conversa.",
-
-        "",
-
-        "⏳ Status: AGUARDANDO CONFIRMAÇÃO DO PAGAMENTO"
-
-      ]
-        .filter(Boolean)
-        .join("\n");
+      let mensagem =
+        montarMensagem(
+          dados,
+          valorConsulta,
+          total,
+          "PIX"
+        );
 
 
-      window.open(
-        `https://wa.me/5555999215944?text=${encodeURIComponent(mensagem)}`,
-        "_blank",
-        "noopener,noreferrer"
+      mensagem +=
+        "\n\nCliente informou que realizou o pagamento.";
+
+      mensagem +=
+        "\n📎 Envie o comprovante nesta conversa.";
+
+
+      abrirWhatsapp(
+        mensagem
       );
+
     }
   );
 
 
-  caixa.appendChild(titulo);
-  caixa.appendChild(valor);
-  caixa.appendChild(instrucao);
-  caixa.appendChild(campoCodigo);
-  caixa.appendChild(botaoCopiar);
-  caixa.appendChild(aviso);
-  caixa.appendChild(botaoWhatsapp);
+  // -------------------------------
+
+  caixa.appendChild(
+    titulo
+  );
+
+  caixa.appendChild(
+    valor
+  );
+
+  caixa.appendChild(
+    instrucao
+  );
+
+  caixa.appendChild(
+    codigo
+  );
+
+  caixa.appendChild(
+    botaoCopiar
+  );
+
+  caixa.appendChild(
+    aviso
+  );
+
+  caixa.appendChild(
+    botaoWhatsapp
+  );
 
 
-  document
-    .getElementById("formulario")
-    .appendChild(caixa);
+  formulario.appendChild(
+    caixa
+  );
 
 
   caixa.scrollIntoView({
     behavior: "smooth",
     block: "center"
   });
+
 }
 
 
-// ========================================
+// =====================================================
 // ENVIO DO FORMULÁRIO
-// ========================================
+// =====================================================
 
-document
-  .getElementById("formulario")
-  .addEventListener("submit", (evento) => {
+if (formulario) {
 
-    evento.preventDefault();
+  formulario.addEventListener(
+    "submit",
+    (evento) => {
 
-
-    const dados = {
-
-      nome:
-        document
-          .getElementById("nome")
-          .value
-          .trim(),
-
-      whatsapp:
-        document
-          .getElementById("whatsapp")
-          .value
-          .trim(),
-
-      servico:
-        servico.value,
-
-      modalidade:
-        document
-          .getElementById("modalidade")
-          .value,
-
-      dia:
-        dia.value,
-
-      horario:
-        horario.value,
-
-      pagamento:
-        document
-          .getElementById("pagamento")
-          .value
-    };
+      evento.preventDefault();
 
 
-    // Confere os campos
-    if (
-      !dados.nome ||
-      !dados.whatsapp ||
-      !dados.servico ||
-      !dados.modalidade ||
-      !dados.dia ||
-      !dados.horario ||
-      !dados.pagamento
-    ) {
+      const dados = {
 
-      alert(
-        "Preencha todos os dados do agendamento."
-      );
+        nome:
+          nome
+            ? nome.value.trim()
+            : "",
 
-      return;
-    }
+        whatsapp:
+          whatsapp
+            ? whatsapp.value.trim()
+            : "",
 
+        servico:
+          servico
+            ? servico.value
+            : "",
 
-    const valorConsulta =
-      obterValorConsulta(dados.servico);
+        modalidade:
+          modalidade
+            ? modalidade.value
+            : "",
 
-    const total =
-      calcularTotal(
-        dados.servico,
-        dados.modalidade
-      );
+        dia:
+          dia
+            ? dia.value
+            : "",
 
+        horario:
+          horario
+            ? horario.value
+            : "",
 
-    if (
-      valorConsulta === null ||
-      total === null
-    ) {
+        pagamento:
+          pagamento
+            ? pagamento.value
+            : ""
 
-      alert(
-        "Não foi possível calcular o valor."
-      );
-
-      return;
-    }
+      };
 
 
-    // ========================================
-    // PAGAMENTO PIX
-    // ========================================
+      // ---------------------------------
+      // VALIDAR
+      // ---------------------------------
 
-    if (
-      dados.pagamento
-        .toLowerCase()
-        .includes("pix")
-    ) {
-
-      const codigoPix =
-        gerarPixCopiaECola(total);
-
-      mostrarPagamentoPix(
-        codigoPix,
-        total,
-        dados
-      );
-
-      // IMPORTANTE:
-      // Não abre WhatsApp automaticamente.
-      return;
-    }
-
-
-    // ========================================
-    // PAGAMENTO CARTÃO / STONE
-    // ========================================
-
-    if (
-      dados.pagamento
-        .toLowerCase()
-        .includes("cart")
-    ) {
-
-      const linkPagamento =
-        linksStone[total];
-
-
-      if (!linkPagamento) {
+      if (
+        !dados.nome ||
+        !dados.whatsapp ||
+        !dados.servico ||
+        !dados.modalidade ||
+        !dados.dia ||
+        !dados.horario ||
+        !dados.pagamento
+      ) {
 
         alert(
-          `Não existe link Stone configurado para R$ ${total
-            .toFixed(2)
-            .replace(".", ",")}.`
+          "Preencha todos os dados do agendamento."
         );
 
         return;
+
       }
 
 
-      localStorage.setItem(
-        "ultimoAgendamento",
-        JSON.stringify({
-          ...dados,
-          valorConsulta,
-          total
-        })
+      // ---------------------------------
+      // VALORES
+      // ---------------------------------
+
+      const valorConsulta =
+        obterValorConsulta(
+          dados.servico
+        );
+
+
+      const total =
+        calcularTotal(
+          dados.servico,
+          dados.modalidade
+        );
+
+
+      if (
+        valorConsulta === null ||
+        total === null
+      ) {
+
+        alert(
+          "Não foi possível calcular o valor do atendimento."
+        );
+
+        return;
+
+      }
+
+
+      // =================================================
+      // PIX
+      // =================================================
+
+      if (
+        dados.pagamento
+          .toLowerCase()
+          .includes("pix")
+      ) {
+
+        const codigoPix =
+          gerarPixCopiaECola(
+            total
+          );
+
+
+        mostrarPagamentoPix(
+          codigoPix,
+          total,
+          dados,
+          valorConsulta
+        );
+
+
+        return;
+
+      }
+
+
+      // =================================================
+      // CARTÃO STONE
+      // =================================================
+
+      if (
+        dados.pagamento
+          .toLowerCase()
+          .includes("cart")
+      ) {
+
+        const linkPagamento =
+          linksStone[total];
+
+
+        if (!linkPagamento) {
+
+          alert(
+            `Não existe link Stone configurado para R$ ${formatarDinheiro(total)}.`
+          );
+
+          return;
+
+        }
+
+
+        /*
+        Salva os dados no navegador
+        antes de ir para a Stone.
+        */
+
+        localStorage.setItem(
+          "ultimoAgendamento",
+          JSON.stringify({
+            ...dados,
+            valorConsulta,
+            total
+          })
+        );
+
+
+        /*
+        Abre diretamente o checkout Stone.
+        */
+
+        window.location.href =
+          linkPagamento;
+
+
+        return;
+
+      }
+
+
+      alert(
+        "Escolha Pix ou Cartão de crédito."
       );
 
-
-      // CARTÃO:
-      // abre diretamente a página da Stone.
-      window.location.href =
-        linkPagamento;
-
-      return;
     }
+  );
+
+}
 
 
-    alert(
-      "Escolha Pix ou Cartão de crédito."
-    );
-  });
-         
+// =====================================================
+// MÚSICA
+// =====================================================
 
-// ========================================
-// MÚSICAS
-// ========================================
+const musica =
+  document.getElementById(
+    "musica"
+  );
 
-const musica = document.getElementById("musica");
-const botaoMusica = document.getElementById("botao-musica");
+const botaoMusica =
+  document.getElementById(
+    "botao-musica"
+  );
+
 
 const listaMusicas = [
   "musica1.mp3",
@@ -861,169 +1311,375 @@ const listaMusicas = [
   "musica4.mp3"
 ];
 
-let musicaAtual = Math.floor(Math.random() * listaMusicas.length);
-let tocando = false;
 
-musica.volume = 0.25;
-musica.src = listaMusicas[musicaAtual];
+let musicaAtual =
+  Math.floor(
+    Math.random() *
+    listaMusicas.length
+  );
 
-botaoMusica.addEventListener("click", async () => {
 
-  try {
+let tocando =
+  false;
 
-    if (!tocando) {
 
-      await musica.play();
+if (
+  musica &&
+  botaoMusica
+) {
 
-      tocando = true;
-      botaoMusica.textContent = "❚❚ Pausar";
+  musica.volume =
+    0.25;
+
+
+  musica.src =
+    listaMusicas[
+      musicaAtual
+    ];
+
+
+  botaoMusica.addEventListener(
+    "click",
+    async () => {
+
+      try {
+
+        if (!tocando) {
+
+          await musica.play();
+
+          tocando =
+            true;
+
+          botaoMusica.textContent =
+            "❚❚ Pausar";
+
+
+        } else {
+
+          musica.pause();
+
+          tocando =
+            false;
+
+          botaoMusica.textContent =
+            "♪ Música";
+
+        }
+
+
+      } catch (erro) {
+
+        alert(
+          "Não foi possível reproduzir a música."
+        );
+
+      }
+
+    }
+  );
+
+
+  musica.addEventListener(
+    "ended",
+    async () => {
+
+      musicaAtual =
+        (
+          musicaAtual + 1
+        ) %
+        listaMusicas.length;
+
+
+      musica.src =
+        listaMusicas[
+          musicaAtual
+        ];
+
+
+      try {
+
+        await musica.play();
+
+        tocando =
+          true;
+
+
+      } catch (erro) {
+
+        tocando =
+          false;
+
+        botaoMusica.textContent =
+          "♪ Música";
+
+      }
+
+    }
+  );
+
+}
+
+
+// =====================================================
+// INSTAGRAM
+// =====================================================
+
+const botaoInstagram =
+  document.getElementById(
+    "instagram"
+  );
+
+
+if (botaoInstagram) {
+
+  botaoInstagram.addEventListener(
+    "click",
+    () => {
+
+      window.open(
+        "https://www.instagram.com/suaestrelaguiatarot",
+        "_blank",
+        "noopener,noreferrer"
+      );
+
+    }
+  );
+
+}
+
+
+// =====================================================
+// MODO NOTURNO
+// =====================================================
+
+const botaoTema =
+  document.getElementById(
+    "botao-tema"
+  );
+
+
+const temaSistema =
+  window.matchMedia(
+    "(prefers-color-scheme: dark)"
+  );
+
+
+function aplicarTema(
+  noturno
+) {
+
+  document.body.classList.toggle(
+    "modo-noturno",
+    noturno
+  );
+
+
+  if (botaoTema) {
+
+    botaoTema.textContent =
+      noturno
+        ? "☀️ Modo claro"
+        : "🌙 Modo noturno";
+
+  }
+
+}
+
+
+const temaSalvo =
+  localStorage.getItem(
+    "tema"
+  );
+
+
+if (
+  temaSalvo === "noturno"
+) {
+
+  aplicarTema(true);
+
+
+} else if (
+  temaSalvo === "claro"
+) {
+
+  aplicarTema(false);
+
+
+} else {
+
+  aplicarTema(
+    temaSistema.matches
+  );
+
+}
+
+
+temaSistema.addEventListener(
+  "change",
+  (evento) => {
+
+    if (
+      !localStorage.getItem(
+        "tema"
+      )
+    ) {
+
+      aplicarTema(
+        evento.matches
+      );
+
+    }
+
+  }
+);
+
+
+if (botaoTema) {
+
+  botaoTema.addEventListener(
+    "click",
+    () => {
+
+      const estaNoturno =
+        document.body
+          .classList
+          .contains(
+            "modo-noturno"
+          );
+
+
+      const novoTemaNoturno =
+        !estaNoturno;
+
+
+      aplicarTema(
+        novoTemaNoturno
+      );
+
+
+      localStorage.setItem(
+        "tema",
+        novoTemaNoturno
+          ? "noturno"
+          : "claro"
+      );
+
+    }
+  );
+
+}
+
+
+// =====================================================
+// TRANSIÇÕES SUAVES
+// =====================================================
+
+document.addEventListener(
+  "DOMContentLoaded",
+  () => {
+
+    const secoes =
+      document.querySelectorAll(
+        "main section"
+      );
+
+
+    if (
+      secoes.length > 0
+    ) {
+
+      secoes[0]
+        .classList
+        .add(
+          "revelar",
+          "ativo"
+        );
+
+    }
+
+
+    if (
+      "IntersectionObserver"
+      in window
+    ) {
+
+      const observador =
+        new IntersectionObserver(
+
+          (entradas) => {
+
+            entradas.forEach(
+              (entrada) => {
+
+                if (
+                  entrada.isIntersecting
+                ) {
+
+                  entrada.target
+                    .classList
+                    .add(
+                      "ativo"
+                    );
+
+
+                  observador.unobserve(
+                    entrada.target
+                  );
+
+                }
+
+              }
+            );
+
+          },
+
+          {
+            threshold: 0.08,
+            rootMargin:
+              "0px 0px -30px 0px"
+          }
+
+        );
+
+
+      secoes.forEach(
+        (secao, indice) => {
+
+          secao.classList.add(
+            "revelar"
+          );
+
+
+          if (
+            indice > 0
+          ) {
+
+            observador.observe(
+              secao
+            );
+
+          }
+
+        }
+      );
+
 
     } else {
 
-      musica.pause();
+      secoes.forEach(
+        (secao) => {
 
-      tocando = false;
-      botaoMusica.textContent = "♪ Música";
-    }
+          secao.classList.add(
+            "revelar",
+            "ativo"
+          );
 
-  } catch {
-
-    alert("Não foi possível reproduzir a música.");
-
-  }
-});
-
-musica.addEventListener("ended", async () => {
-
-  musicaAtual =
-    (musicaAtual + 1) % listaMusicas.length;
-
-  musica.src = listaMusicas[musicaAtual];
-
-  try {
-
-    await musica.play();
-    tocando = true;
-
-  } catch {
-
-    tocando = false;
-    botaoMusica.textContent = "♪ Música";
-
-  }
-});
-
-
-// ========================================
-// INSTAGRAM
-// ========================================
-
-document.getElementById("instagram").addEventListener("click", () => {
-  window.open(
-    "https://www.instagram.com/suaestrelaguiatarot",
-    "_blank"
-  );
-});
-
-
-// ========================================
-// MODO NOTURNO — AUTOMÁTICO + MANUAL
-// ========================================
-
-const botaoTema = document.getElementById("botao-tema");
-const temaSistema = window.matchMedia("(prefers-color-scheme: dark)");
-
-function aplicarTema(noturno) {
-  document.body.classList.toggle("modo-noturno", noturno);
-
-  if (botaoTema) {
-    botaoTema.textContent = noturno
-      ? "☀️ Modo claro"
-      : "🌙 Modo noturno";
-  }
-}
-
-// Verifica se a pessoa já escolheu um tema manualmente
-const temaSalvo = localStorage.getItem("tema");
-
-if (temaSalvo === "noturno") {
-  aplicarTema(true);
-} else if (temaSalvo === "claro") {
-  aplicarTema(false);
-} else {
-  // Primeira visita: segue o tema do aparelho
-  aplicarTema(temaSistema.matches);
-}
-
-// Se a pessoa trocar o tema do aparelho,
-// o site acompanha automaticamente enquanto
-// não houver uma escolha manual salva.
-temaSistema.addEventListener("change", (evento) => {
-  if (!localStorage.getItem("tema")) {
-    aplicarTema(evento.matches);
-  }
-});
-
-// Botão continua permitindo escolha manual
-if (botaoTema) {
-  botaoTema.addEventListener("click", () => {
-    const estaNoturno =
-      document.body.classList.contains("modo-noturno");
-
-    const novoTemaNoturno = !estaNoturno;
-
-    aplicarTema(novoTemaNoturno);
-
-    localStorage.setItem(
-      "tema",
-      novoTemaNoturno ? "noturno" : "claro"
-    );
-  });
-
-}
-// ========================================
-// TRANSIÇÕES SUAVES ENTRE AS SEÇÕES
-// ========================================
-
-document.addEventListener("DOMContentLoaded", () => {
-
-  const secoes = document.querySelectorAll("main section");
-
-  // Primeira seção já aparece normalmente
-  if (secoes.length > 0) {
-    secoes[0].classList.add("revelar", "ativo");
-  }
-
-  // Demais seções entram suavemente ao rolar
-  const observador = new IntersectionObserver(
-    (entradas) => {
-
-      entradas.forEach((entrada) => {
-
-        if (entrada.isIntersecting) {
-          entrada.target.classList.add("ativo");
-
-          // Anima apenas uma vez
-          observador.unobserve(entrada.target);
         }
+      );
 
-      });
-
-    },
-    {
-      threshold: 0.08,
-      rootMargin: "0px 0px -30px 0px"
-    }
-  );
-
-  secoes.forEach((secao, indice) => {
-
-    secao.classList.add("revelar");
-
-    if (indice > 0) {
-      observador.observe(secao);
     }
 
-  });
-
-});
+  }
+);
