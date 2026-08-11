@@ -106,37 +106,154 @@ dia.addEventListener("change", async () => {
 
       if (!estaOcupado) {
         const opcao = document.createElement("option");
-        opcao.value = hora;
-        opcao.textContent = hora;
-        horario.appendChild(opcao);
+// ========================================
+// DATA E HORÁRIO + GOOGLE AGENDA
+// ========================================
+
+// Impede selecionar datas anteriores a hoje
+const hoje = new Date();
+const ano = hoje.getFullYear();
+const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+const dataHoje = String(hoje.getDate()).padStart(2, "0");
+
+dia.min = `${ano}-${mes}-${dataHoje}`;
+
+
+// Monta a lista de horários disponíveis
+function mostrarHorarios(ocupados = []) {
+
+  horario.innerHTML =
+    '<option value="">Selecione um horário</option>';
+
+  let quantidadeLivres = 0;
+
+  horariosDisponiveis.forEach((hora) => {
+
+    const estaOcupado = ocupados.some((evento) => {
+
+      if (!evento || !evento.inicio || !evento.fim) {
+        return false;
       }
 
+      return hora >= evento.inicio && hora < evento.fim;
     });
 
-    horario.disabled = horario.options.length <= 1;
+    if (!estaOcupado) {
 
-    if (horario.disabled) {
-      horario.innerHTML =
-        '<option value="">Nenhum horário disponível</option>';
+      const opcao = document.createElement("option");
+
+      opcao.value = hora;
+      opcao.textContent = hora;
+
+      horario.appendChild(opcao);
+
+      quantidadeLivres++;
     }
+
+  });
+
+
+  // Se existem horários, libera o campo
+  if (quantidadeLivres > 0) {
+
+    horario.disabled = false;
+
+  } else {
+
+    horario.innerHTML =
+      '<option value="">Nenhum horário disponível</option>';
+
+    horario.disabled = true;
+  }
+}
+
+
+// Quando a pessoa escolhe uma data
+dia.addEventListener("change", async () => {
+
+  // Se não existe data selecionada
+  if (!dia.value) {
+
+    horario.innerHTML =
+      '<option value="">Escolha uma data</option>';
+
+    horario.disabled = true;
+
+    return;
+  }
+
+
+  // Primeiro libera os horários imediatamente.
+  // Assim a Agenda nunca deixa o formulário travado.
+  mostrarHorarios([]);
+
+
+  try {
+
+    const url =
+      `${AGENDA_API_URL}?data=${encodeURIComponent(dia.value)}&t=${Date.now()}`;
+
+    const resposta = await fetch(url, {
+      method: "GET",
+      redirect: "follow",
+      cache: "no-store"
+    });
+
+
+    if (!resposta.ok) {
+      throw new Error(
+        `Erro ao consultar agenda: ${resposta.status}`
+      );
+    }
+
+
+    const texto = await resposta.text();
+
+    let dados;
+
+    try {
+
+      dados = JSON.parse(texto);
+
+    } catch {
+
+      throw new Error(
+        "A resposta da Agenda não está em formato JSON."
+      );
+    }
+
+
+    // Se o Apps Script informar erro,
+    // mantém os horários disponíveis em vez de travar.
+    if (dados.sucesso === false) {
+
+      throw new Error(
+        dados.erro || "Erro retornado pela Google Agenda."
+      );
+    }
+
+
+    const ocupados =
+      Array.isArray(dados.ocupados)
+        ? dados.ocupados
+        : [];
+
+
+    // Atualiza a lista retirando os horários ocupados
+    mostrarHorarios(ocupados);
+
 
   } catch (erro) {
 
-    console.error("Erro ao consultar Google Agenda:", erro);
+    console.error(
+      "ERRO AO CONSULTAR GOOGLE AGENDA:",
+      erro
+    );
 
-    // Se a consulta à Agenda falhar,
-    // ainda permite selecionar o horário.
-    horario.innerHTML =
-      '<option value="">Selecione um horário</option>';
+    // Se houver qualquer problema na integração,
+    // não bloqueia o campo de horário.
+    mostrarHorarios([]);
 
-    horariosDisponiveis.forEach((hora) => {
-      const opcao = document.createElement("option");
-      opcao.value = hora;
-      opcao.textContent = hora;
-      horario.appendChild(opcao);
-    });
-
-    horario.disabled = false;
   }
 
 });
