@@ -68,15 +68,15 @@ function mostrarHorarios(ocupados = []) {
 
 dia.addEventListener("change", async () => {
 
+  horario.disabled = true;
+  horario.innerHTML =
+    '<option value="">Consultando horários...</option>';
+
   if (!dia.value) {
     horario.innerHTML =
       '<option value="">Escolha uma data</option>';
-    horario.disabled = true;
     return;
   }
-
-  // LIBERA OS HORÁRIOS IMEDIATAMENTE
-  mostrarHorarios();
 
   try {
 
@@ -91,19 +91,55 @@ dia.addEventListener("change", async () => {
 
     const dados = await resposta.json();
 
-    if (dados.sucesso && Array.isArray(dados.ocupados)) {
-      mostrarHorarios(dados.ocupados);
+    const ocupados = Array.isArray(dados.ocupados)
+      ? dados.ocupados
+      : [];
+
+    horario.innerHTML =
+      '<option value="">Selecione um horário</option>';
+
+    horariosDisponiveis.forEach((hora) => {
+
+      const estaOcupado = ocupados.some((evento) =>
+        hora >= evento.inicio && hora < evento.fim
+      );
+
+      if (!estaOcupado) {
+        const opcao = document.createElement("option");
+        opcao.value = hora;
+        opcao.textContent = hora;
+        horario.appendChild(opcao);
+      }
+
+    });
+
+    horario.disabled = horario.options.length <= 1;
+
+    if (horario.disabled) {
+      horario.innerHTML =
+        '<option value="">Nenhum horário disponível</option>';
     }
 
   } catch (erro) {
 
-    console.error(
-      "Google Agenda indisponível. Mantendo horários padrão:",
-      erro
-    );
+    console.error("Erro ao consultar Google Agenda:", erro);
 
-    // Se o Google falhar, o agendamento CONTINUA funcionando.
-    mostrarHorarios();
+    // Se a consulta à Agenda falhar,
+    // ainda permite selecionar o horário.
+    horario.innerHTML =
+      '<option value="">Selecione um horário</option>';
+
+    horariosDisponiveis.forEach((hora) => {
+      const opcao = document.createElement("option");
+      opcao.value = hora;
+      opcao.textContent = hora;
+      horario.appendChild(opcao);
+    });
+
+    horario.disabled = false;
+  }
+
+});
   }
 });
 // ========================================
