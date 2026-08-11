@@ -107,8 +107,30 @@ dia.addEventListener("change", async () => {
   }
 });
 // ========================================
-// FORMULÁRIO / WHATSAPP
+// FORMULÁRIO / WHATSAPP + PAGAMENTO
 // ========================================
+
+// Links permanentes da Stone por valor
+const linksStone = {
+  15: "https://payment-link-v3.stone.com.br/pl_N2KqwMpYLgjoRzGFPhgd9D0X43WnB6bO",
+  25: "https://payment-link-v3.stone.com.br/pl_pqQWMz3L86nkjXqHozh14PJvAygYEXdm",
+  40: "https://payment-link-v3.stone.com.br/pl_p7ZMPbg4K3yXa7OtElHnMkqrLaBRd2lj",
+  60: "https://payment-link-v3.stone.com.br/pl_kXwQ4neJB8mRojcQEtrKP1G73Exga0Zy"
+};
+
+// Descobre o valor pelo texto da consulta escolhida
+function obterValorConsulta(textoServico) {
+
+  const correspondencia = textoServico.match(/R\$\s*(\d+(?:[.,]\d{1,2})?)/i);
+
+  if (!correspondencia) {
+    return null;
+  }
+
+  return Number(
+    correspondencia[1].replace(",", ".")
+  );
+}
 
 document.getElementById("formulario").addEventListener("submit", (evento) => {
 
@@ -129,16 +151,43 @@ document.getElementById("formulario").addEventListener("submit", (evento) => {
     return;
   }
 
+  const valor = obterValorConsulta(dados.servico);
+
   let instrucaoPagamento = "";
 
   if (dados.pagamento.toLowerCase().includes("pix")) {
-    instrucaoPagamento =
-      "Pagamento: PIX\n" +
-      "Vou realizar o pagamento via Pix e enviar o comprovante por este WhatsApp.";
+
+    instrucaoPagamento = [
+      "Pagamento: PIX",
+      valor ? `Valor: R$ ${valor.toFixed(2).replace(".", ",")}` : "",
+      "Envie o comprovante do Pix por este WhatsApp."
+    ]
+      .filter(Boolean)
+      .join("\n");
+
+  } else if (dados.pagamento.toLowerCase().includes("cart")) {
+
+    const linkPagamento = linksStone[valor];
+
+    if (!linkPagamento) {
+      alert("Não encontrei o link de pagamento para esta consulta.");
+      return;
+    }
+
+    instrucaoPagamento = [
+      "Pagamento: CARTÃO DE CRÉDITO — 1x",
+      `Valor: R$ ${valor.toFixed(2).replace(".", ",")}`,
+      "",
+      "Pague pelo link seguro da Stone:",
+      linkPagamento,
+      "",
+      "Após o pagamento, retorne aqui e informe que o pagamento foi realizado."
+    ].join("\n");
+
   } else {
-    instrucaoPagamento =
-      "Pagamento: CARTÃO DE CRÉDITO\n" +
-      "Aguardo o link de pagamento da Stone para concluir o pagamento.";
+
+    alert("Escolha Pix ou Cartão de crédito.");
+    return;
   }
 
   const mensagem = [
