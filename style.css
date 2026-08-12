@@ -982,3 +982,26 @@ body.modo-noturno .marca img {
   min-width: 0;
   box-sizing: border-box;
 }
+.campo-data {
+  position: relative;
+  width: 100%;
+}
+
+.campo-data input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#mensagem-data {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  z-index: 2;
+  color: #666;
+}
+
+.campo-data input:not(:placeholder-shown) + #mensagem-data {
+  display: none;
+}
