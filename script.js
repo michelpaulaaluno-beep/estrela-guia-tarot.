@@ -116,20 +116,20 @@ function normalizarHora(valor) {
 }
 
 
-// =====================================================
-// MOSTRAR HORÁRIOS
-// =====================================================
-
 function mostrarHorarios(ocupados = []) {
 
   if (!horario) {
     return;
   }
 
+  // Guarda o horário que a pessoa já escolheu.
+  const horarioSelecionado = horario.value;
+
   horario.innerHTML =
     '<option value="">Selecione um horário</option>';
 
   let quantidadeLivres = 0;
+  let horarioAindaDisponivel = false;
 
   horariosDisponiveis.forEach((hora) => {
 
@@ -166,6 +166,13 @@ function mostrarHorarios(ocupados = []) {
       opcao.value = hora;
       opcao.textContent = hora;
 
+      // Se era o horário escolhido,
+      // mantém ele selecionado.
+      if (hora === horarioSelecionado) {
+        opcao.selected = true;
+        horarioAindaDisponivel = true;
+      }
+
       horario.appendChild(opcao);
 
       quantidadeLivres++;
@@ -176,6 +183,15 @@ function mostrarHorarios(ocupados = []) {
   if (quantidadeLivres > 0) {
 
     horario.disabled = false;
+
+    // Segurança extra para preservar
+    // a escolha depois da resposta do Google.
+    if (
+      horarioSelecionado &&
+      horarioAindaDisponivel
+    ) {
+      horario.value = horarioSelecionado;
+    }
 
   } else {
 
