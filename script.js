@@ -1015,75 +1015,153 @@ if (formulario) {
       // =================================================
       // PIX
       // =================================================
+// =====================================================
+// ENVIO DO FORMULÁRIO
+// =====================================================
 
-      if (
-        dados.pagamento
-          .toLowerCase()
-          .includes("pix")
-      ) {
+if (formulario) {
 
-        const codigoPix =
-          gerarPixCopiaECola(total);
+  formulario.addEventListener("submit", (evento) => {
 
+    evento.preventDefault();
 
-        mostrarPagamentoPix(
-          codigoPix,
-          total,
-          dados,
-          valorConsulta
-        );
-
-        return;
-      }
-
-
-      // =================================================
-      // CARTÃO
-      // =================================================
-
-      if (
-        dados.pagamento
-          .toLowerCase()
-          .includes("cart")
-      ) {
-
-        const linkPagamento =
-          linksStone[total];
+    const dados = {
+      nome: nome ? nome.value.trim() : "",
+      whatsapp: whatsapp ? whatsapp.value.trim() : "",
+      servico: servico ? servico.value : "",
+      modalidade: modalidade ? modalidade.value : "",
+      dia: dia ? dia.value : "",
+      horario: horario ? horario.value : "",
+      pagamento: pagamento ? pagamento.value : ""
+    };
 
 
-        if (!linkPagamento) {
+    // =================================================
+    // VALIDAÇÃO DOS CAMPOS
+    // =================================================
 
-          alert(
-            `Não existe link Stone configurado para R$ ${formatarDinheiro(total)}.`
-          );
+    if (
+      !dados.nome ||
+      !dados.whatsapp ||
+      !dados.servico ||
+      !dados.modalidade ||
+      !dados.dia ||
+      !dados.horario ||
+      !dados.pagamento
+    ) {
 
-          return;
-        }
-
-
-        localStorage.setItem(
-          "ultimoAgendamento",
-          JSON.stringify({
-            ...dados,
-            valorConsulta,
-            total
-          })
-        );
+      alert("Preencha todos os dados do agendamento.");
+      return;
+    }
 
 
-        window.location.href =
-          linkPagamento;
+    // =================================================
+    // OUTRA CIDADE
+    // =================================================
 
-        return;
-      }
+    if (
+      dados.modalidade
+        .toLowerCase()
+        .includes("outra cidade")
+    ) {
 
+      const mensagemOutraCidade = [
+        "✨ SOLICITAÇÃO DE ATENDIMENTO — ESTRELA GUIA TAROT",
+        "",
+        `Nome: ${dados.nome}`,
+        `WhatsApp: ${dados.whatsapp}`,
+        `Consulta: ${dados.servico}`,
+        `Modalidade: ${dados.modalidade}`,
+        `Data pretendida: ${dados.dia}`,
+        `Horário pretendido: ${dados.horario}`,
+        "",
+        "🚗 ATENDIMENTO EM OUTRA CIDADE",
+        "",
+        "Gostaria de consultar a disponibilidade e o valor do deslocamento.",
+        "",
+        "O pagamento será combinado após a confirmação do valor do deslocamento."
+      ].join("\n");
+
+      abrirWhatsapp(mensagemOutraCidade);
+      return;
+    }
+
+
+    // =================================================
+    // DINHEIRO FÍSICO
+    // =================================================
+
+    const pagamentoEmDinheiro =
+      dados.pagamento
+        .toLowerCase()
+        .includes("dinheiro");
+
+
+    const atendimentoOnline =
+      dados.modalidade
+        .toLowerCase()
+        .includes("online");
+
+
+    if (
+      pagamentoEmDinheiro &&
+      atendimentoOnline
+    ) {
 
       alert(
-        "Escolha Pix ou Cartão de crédito."
+        "Pagamento em dinheiro está disponível somente para atendimentos presenciais. Escolha Pix ou cartão de crédito para atendimento online."
       );
+
+      pagamento.value = "";
+
+      return;
     }
-  );
-}
+
+
+    // =================================================
+    // CALCULAR VALORES
+    // =================================================
+
+    const valorConsulta =
+      obterValorConsulta(dados.servico);
+
+
+    const total =
+      calcularTotal(
+        dados.servico,
+        dados.modalidade
+      );
+
+
+    if (
+      valorConsulta === null ||
+      total === null
+    ) {
+
+      alert(
+        "Não foi possível calcular o valor do atendimento."
+      );
+
+      return;
+    }
+
+
+    // =================================================
+    // DINHEIRO — ATENDIMENTO PRESENCIAL
+    // =================================================
+
+    if (pagamentoEmDinheiro) {
+
+      let mensagemDinheiro =
+        montarMensagem(
+          dados,
+          valorConsulta,
+          total,
+          "DINHEIRO FÍSICO — PAGAMENTO NO ATENDIMENTO"
+        );
+
+
+     
 
 
 // =====================================================
