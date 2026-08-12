@@ -1654,3 +1654,21 @@ document.addEventListener(
     }
   }
 );
+// =====================================================
+// MENSAGEM DENTRO DO CAMPO DATA
+// =====================================================
+
+const mensagemData = document.getElementById("mensagem-data");
+
+if (dia && mensagemData) {
+
+  function atualizarMensagemData() {
+    mensagemData.style.display =
+      dia.value ? "none" : "block";
+  }
+
+  dia.addEventListener("change", atualizarMensagemData);
+  dia.addEventListener("input", atualizarMensagemData);
+
+  atualizarMensagemData();
+}
