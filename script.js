@@ -292,12 +292,29 @@ async function consultarAgenda(dataSelecionada) {
 
 
 // =====================================================
-// ESCOLHA DA DATA
+// ESCOLHA DA DATA + CARREGAMENTO DA AGENDA
 // =====================================================
 
 if (dia && horario) {
 
   horario.disabled = true;
+
+  // Cria o aviso de carregamento
+  const carregandoAgenda =
+    document.createElement("div");
+
+  carregandoAgenda.id = "carregando-agenda";
+
+  carregandoAgenda.innerHTML = `
+    <img src="logo.png" alt="">
+    <span>Verificando horários disponíveis...</span>
+  `;
+
+  carregandoAgenda.style.display = "none";
+
+  // Coloca o aviso logo abaixo do campo de horário
+  horario.parentElement.appendChild(carregandoAgenda);
+
 
   dia.addEventListener("change", async () => {
 
@@ -308,17 +325,21 @@ if (dia && horario) {
 
       horario.disabled = true;
 
+      carregandoAgenda.style.display = "none";
+
       return;
     }
 
 
-    // Enquanto consulta a Agenda,
-    // não deixa escolher um horário provisório.
-
+    // Bloqueia o horário durante a consulta
     horario.innerHTML =
-      '<option value="">Consultando horários...</option>';
+      '<option value="">Aguarde...</option>';
 
     horario.disabled = true;
+
+
+    // Mostra logo girando
+    carregandoAgenda.style.display = "flex";
 
 
     try {
@@ -326,8 +347,25 @@ if (dia && horario) {
       const ocupados =
         await consultarAgenda(dia.value);
 
-      // Só agora mostra a lista definitiva.
+
+      // Somente depois da resposta do Google
+      // os horários são criados.
       mostrarHorarios(ocupados);
+
+
+      carregandoAgenda.innerHTML = `
+        <span class="agenda-ok">✓</span>
+        <span>Horários disponíveis</span>
+      `;
+
+
+      // Mantém a confirmação por um instante
+      setTimeout(() => {
+
+        carregandoAgenda.style.display = "none";
+
+      }, 1200);
+
 
     } catch (erro) {
 
@@ -338,12 +376,22 @@ if (dia && horario) {
 
 
       /*
-      Se a Agenda estiver indisponível,
-      libera os horários para não
-      travar completamente o site.
+      Se houver falha na comunicação,
+      não fingimos que os horários foram
+      verificados pelo Google.
       */
 
-      mostrarHorarios([]);
+      horario.innerHTML =
+        '<option value="">Não foi possível verificar</option>';
+
+      horario.disabled = true;
+
+
+      carregandoAgenda.innerHTML = `
+        <span class="agenda-erro">!</span>
+        <span>Não foi possível verificar os horários. Tente novamente.</span>
+      `;
+
     }
 
   });
