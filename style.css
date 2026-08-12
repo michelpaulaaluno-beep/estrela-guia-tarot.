@@ -882,5 +882,69 @@ body.modo-noturno .marca img {
   }
 }
   
+/* ========================================
+   CORREÇÃO FINAL DO FORMULÁRIO DE AGENDAMENTO
+======================================== */
 
+#formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+}
+
+#formulario > label {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  font-weight: 600;
+  gap: 8px;
+}
+
+#formulario .linha {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+}
+
+#formulario .linha label {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  font-weight: 600;
+  gap: 8px;
+}
+
+#formulario input,
+#formulario select {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
+
+#formulario .enviar {
+  width: 100%;
+  max-width: none;
+  display: block;
+  box-sizing: border-box;
+}
+
+/* CELULAR */
+@media (max-width: 700px) {
+
+  #formulario .linha {
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+
+  #formulario > label {
+    width: 100%;
+  }
+
+  #formulario .enviar {
+    width: 100%;
+  }
+}
   
