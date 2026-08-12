@@ -312,10 +312,13 @@ if (dia && horario) {
     }
 
 
-    // Libera primeiro.
-    // Se a Agenda falhar, o formulário não fica travado.
+    // Enquanto consulta a Agenda,
+    // não deixa escolher um horário provisório.
 
-    mostrarHorarios([]);
+    horario.innerHTML =
+      '<option value="">Consultando horários...</option>';
+
+    horario.disabled = true;
 
 
     try {
@@ -323,6 +326,7 @@ if (dia && horario) {
       const ocupados =
         await consultarAgenda(dia.value);
 
+      // Só agora mostra a lista definitiva.
       mostrarHorarios(ocupados);
 
     } catch (erro) {
@@ -332,8 +336,16 @@ if (dia && horario) {
         erro
       );
 
+
+      /*
+      Se a Agenda estiver indisponível,
+      libera os horários para não
+      travar completamente o site.
+      */
+
       mostrarHorarios([]);
     }
+
   });
 }
 
