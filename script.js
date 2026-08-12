@@ -291,106 +291,89 @@ async function consultarAgenda(dataSelecionada) {
 }
 
 
+// // =====================================================
+// ESCOLHA DA DATA
 // =====================================================
-// ESCOLHA DA DATA + CARREGAMENTO DA AGENDA
-// =====================================================
+
+let consultaAgendaAtual = 0;
 
 if (dia && horario) {
 
+  horario.innerHTML =
+    '<option value="">Escolha uma data</option>';
+
   horario.disabled = true;
-
-  // Cria o aviso de carregamento
-  const carregandoAgenda =
-    document.createElement("div");
-
-  carregandoAgenda.id = "carregando-agenda";
-
-  carregandoAgenda.innerHTML = `
-    <img src="logo.png" alt="">
-    <span>Verificando horários disponíveis...</span>
-  `;
-
-  carregandoAgenda.style.display = "none";
-
-  // Coloca o aviso logo abaixo do campo de horário
-  horario.parentElement.appendChild(carregandoAgenda);
-
 
   dia.addEventListener("change", async () => {
 
-    if (!dia.value) {
+    const dataSelecionada = dia.value;
+
+    // Identifica esta consulta.
+    // Se outra começar depois, a antiga não poderá
+    // alterar o campo de horário.
+    const numeroConsulta = ++consultaAgendaAtual;
+
+    if (!dataSelecionada) {
 
       horario.innerHTML =
         '<option value="">Escolha uma data</option>';
 
       horario.disabled = true;
 
-      carregandoAgenda.style.display = "none";
-
       return;
     }
 
-
-    // Bloqueia o horário durante a consulta
+    // Enquanto consulta o Google, o usuário ainda
+    // não pode escolher horário.
     horario.innerHTML =
-      '<option value="">Aguarde...</option>';
+      '<option value="">Verificando horários disponíveis...</option>';
 
     horario.disabled = true;
-
-
-    // Mostra logo girando
-    carregandoAgenda.style.display = "flex";
-
 
     try {
 
       const ocupados =
-        await consultarAgenda(dia.value);
+        await consultarAgenda(dataSelecionada);
 
+      // Se a pessoa já mudou a data enquanto
+      // esperávamos o Google, ignora a resposta antiga.
+      if (
+        numeroConsulta !== consultaAgendaAtual ||
+        dia.value !== dataSelecionada
+      ) {
+        return;
+      }
 
-      // Somente depois da resposta do Google
-      // os horários são criados.
-      mostrarHorarios(ocupados);
-
-
-      carregandoAgenda.innerHTML = `
-        <span class="agenda-ok">✓</span>
-        <span>Horários disponíveis</span>
-      `;
-
-
-      // Mantém a confirmação por um instante
-      setTimeout(() => {
-
-        carregandoAgenda.style.display = "none";
-
-      }, 1200);
-
+      mostrarHorarios(
+        Array.isArray(ocupados)
+          ? ocupados
+          : []
+      );
 
     } catch (erro) {
 
       console.warn(
-        "Google Agenda indisponível:",
+        "Não foi possível consultar a Agenda:",
         erro
       );
 
+      // Se esta consulta já ficou velha,
+      // não altera mais nada.
+      if (
+        numeroConsulta !== consultaAgendaAtual ||
+        dia.value !== dataSelecionada
+      ) {
+        return;
+      }
 
       /*
-      Se houver falha na comunicação,
-      não fingimos que os horários foram
-      verificados pelo Google.
+      IMPORTANTE:
+      se o Google falhar, o site NÃO fica travado
+      e NÃO fica apagando o horário.
+
+      Os horários normais são liberados.
       */
-
-      horario.innerHTML =
-        '<option value="">Não foi possível verificar</option>';
-
-      horario.disabled = true;
-
-
-      carregandoAgenda.innerHTML = `
-        <span class="agenda-erro">!</span>
-        <span>Não foi possível verificar os horários. Tente novamente.</span>
-      `;
+      mostrarHorarios([]);
 
     }
 
