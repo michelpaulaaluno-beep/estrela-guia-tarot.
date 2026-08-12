@@ -291,29 +291,20 @@ async function consultarAgenda(dataSelecionada) {
 }
 
 
-// // =====================================================
+// =====================================================
 // ESCOLHA DA DATA
 // =====================================================
 
-let consultaAgendaAtual = 0;
-
 if (dia && horario) {
+
+  horario.disabled = true;
 
   horario.innerHTML =
     '<option value="">Escolha uma data</option>';
 
-  horario.disabled = true;
-
   dia.addEventListener("change", async () => {
 
-    const dataSelecionada = dia.value;
-
-    // Identifica esta consulta.
-    // Se outra começar depois, a antiga não poderá
-    // alterar o campo de horário.
-    const numeroConsulta = ++consultaAgendaAtual;
-
-    if (!dataSelecionada) {
+    if (!dia.value) {
 
       horario.innerHTML =
         '<option value="">Escolha uma data</option>';
@@ -323,57 +314,131 @@ if (dia && horario) {
       return;
     }
 
-    // Enquanto consulta o Google, o usuário ainda
-    // não pode escolher horário.
-    horario.innerHTML =
-      '<option value="">Verificando horários disponíveis...</option>';
 
-    horario.disabled = true;
+    // ---------------------------------------------
+    // 1. LIBERA OS HORÁRIOS IMEDIATAMENTE
+    // ---------------------------------------------
+
+    horario.innerHTML =
+      '<option value="">Selecione um horário</option>';
+
+    horariosDisponiveis.forEach((hora) => {
+
+      const opcao =
+        document.createElement("option");
+
+      opcao.value = hora;
+      opcao.textContent = hora;
+
+      horario.appendChild(opcao);
+    });
+
+    horario.disabled = false;
+
+
+    // ---------------------------------------------
+    // 2. CONSULTA GOOGLE AGENDA EM SEGUNDO PLANO
+    // SEM APAGAR OU RECRIAR O CAMPO
+    // ---------------------------------------------
 
     try {
 
       const ocupados =
-        await consultarAgenda(dataSelecionada);
+        await consultarAgenda(dia.value);
 
-      // Se a pessoa já mudou a data enquanto
-      // esperávamos o Google, ignora a resposta antiga.
+
+      horario
+        .querySelectorAll("option")
+        .forEach((opcao) => {
+
+          if (!opcao.value) {
+            return;
+          }
+
+
+          const hora =
+            opcao.value;
+
+
+          const estaOcupado =
+            ocupados.some((evento) => {
+
+              if (!evento) {
+                return false;
+              }
+
+              const inicio =
+                normalizarHora(evento.inicio);
+
+              const fim =
+                normalizarHora(evento.fim);
+
+
+              if (!inicio) {
+                return false;
+              }
+
+
+              if (fim) {
+
+                return (
+                  hora >= inicio &&
+                  hora < fim
+                );
+              }
+
+
+              return hora === inicio;
+            });
+
+
+          if (estaOcupado) {
+
+            opcao.disabled = true;
+
+            opcao.textContent =
+              `${hora} — indisponível`;
+          }
+
+        });
+
+
+      // Se a pessoa já escolheu um horário
+      // e o Google informou que ele está ocupado,
+      // avisa e limpa somente esse horário.
+
+      const selecionado =
+        horario.options[
+          horario.selectedIndex
+        ];
+
+
       if (
-        numeroConsulta !== consultaAgendaAtual ||
-        dia.value !== dataSelecionada
+        selecionado &&
+        selecionado.disabled
       ) {
-        return;
+
+        horario.value = "";
+
+        alert(
+          "Esse horário acabou de ficar indisponível. Escolha outro horário."
+        );
       }
 
-      mostrarHorarios(
-        Array.isArray(ocupados)
-          ? ocupados
-          : []
-      );
 
     } catch (erro) {
 
       console.warn(
-        "Não foi possível consultar a Agenda:",
+        "Não foi possível consultar o Google Agenda:",
         erro
       );
 
-      // Se esta consulta já ficou velha,
-      // não altera mais nada.
-      if (
-        numeroConsulta !== consultaAgendaAtual ||
-        dia.value !== dataSelecionada
-      ) {
-        return;
-      }
-
       /*
-      IMPORTANTE:
-      se o Google falhar, o site NÃO fica travado
-      e NÃO fica apagando o horário.
-
-      Os horários normais são liberados.
+      Se o Google falhar:
+      NÃO APAGA O HORÁRIO.
+      NÃO TRAVA O CAMPO.
+      NÃO FAZ PISCAR.
       */
-      mostrarHorarios([]);
 
     }
 
