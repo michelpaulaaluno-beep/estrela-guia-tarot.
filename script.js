@@ -61,7 +61,7 @@ const whatsapp = document.getElementById("whatsapp");
 
 
 // =====================================================
-// ANO
+// ANO AUTOMÁTICO
 // =====================================================
 
 const elementoAno = document.getElementById("ano");
@@ -283,46 +283,42 @@ if (dia && horario) {
 
   horario.disabled = true;
 
-  dia.addEventListener(
-    "change",
-    async () => {
+  dia.addEventListener("change", async () => {
 
-      if (!dia.value) {
+    if (!dia.value) {
 
-        horario.innerHTML =
-          '<option value="">Escolha uma data</option>';
+      horario.innerHTML =
+        '<option value="">Escolha uma data</option>';
 
-        horario.disabled = true;
+      horario.disabled = true;
 
-        return;
-      }
+      return;
+    }
 
 
-      // LIBERA IMEDIATAMENTE.
-      // GOOGLE NÃO BLOQUEIA O FORMULÁRIO.
+    // Libera primeiro.
+    // Se a Agenda falhar, o formulário não fica travado.
+
+    mostrarHorarios([]);
+
+
+    try {
+
+      const ocupados =
+        await consultarAgenda(dia.value);
+
+      mostrarHorarios(ocupados);
+
+    } catch (erro) {
+
+      console.warn(
+        "Google Agenda indisponível:",
+        erro
+      );
 
       mostrarHorarios([]);
-
-
-      try {
-
-        const ocupados =
-          await consultarAgenda(dia.value);
-
-        mostrarHorarios(ocupados);
-
-      } catch (erro) {
-
-        console.warn(
-          "Google Agenda indisponível:",
-          erro
-        );
-
-        // Se Google falhar, horários continuam disponíveis.
-        mostrarHorarios([]);
-      }
     }
-  );
+  });
 }
 
 
@@ -353,7 +349,7 @@ function obterValorConsulta(textoServico) {
 
 
 // =====================================================
-// CALCULAR TOTAL ATUAL
+// CALCULAR TOTAL
 // =====================================================
 
 function calcularTotal(
@@ -371,7 +367,9 @@ function calcularTotal(
   let total = valorConsulta;
 
 
-  // Adicional de R$10 somente na casa do cliente.
+  // R$ 10 de deslocamento somente
+  // para casa do cliente em Alegrete.
+
   if (
     modalidadeSelecionada &&
     modalidadeSelecionada
@@ -388,7 +386,7 @@ function calcularTotal(
 
 
 // =====================================================
-// FORMATAÇÃO DE DINHEIRO
+// FORMATAR DINHEIRO
 // =====================================================
 
 function formatarDinheiro(valor) {
@@ -415,13 +413,11 @@ function invalidarPagamento() {
   }
 
 
-  // Remove qualquer agendamento antigo salvo.
   localStorage.removeItem(
     "ultimoAgendamento"
   );
 
 
-  // Obriga escolher a forma de pagamento novamente.
   if (pagamento) {
     pagamento.value = "";
   }
@@ -429,61 +425,51 @@ function invalidarPagamento() {
 
 
 // =====================================================
-// MUDOU CONSULTA = PAGAMENTO ANTIGO NÃO VALE
+// MUDANÇA DE CONSULTA
 // =====================================================
 
 if (servico) {
 
-  servico.addEventListener(
-    "change",
-    () => {
+  servico.addEventListener("change", () => {
 
-      invalidarPagamento();
+    /*
+    IMPORTANTE:
+    limpa somente o PAGAMENTO.
 
-      const novoTotal =
-        calcularTotal(
-          servico.value,
-          modalidade ? modalidade.value : ""
-        );
+    Não mexe na data.
+    Não mexe no horário.
+    */
 
-      console.log(
-        "Consulta alterada. Novo total:",
-        novoTotal
-      );
-    }
-  );
+    invalidarPagamento();
+  });
 }
 
 
 // =====================================================
-// MUDOU MODALIDADE = PAGAMENTO ANTIGO NÃO VALE
+// MUDANÇA DE MODALIDADE
 // =====================================================
 
 if (modalidade) {
 
-  modalidade.addEventListener(
-    "change",
-    () => {
+  modalidade.addEventListener("change", () => {
 
-      invalidarPagamento();
+    /*
+    O preço pode mudar por causa
+    do deslocamento.
 
-      const novoTotal =
-        calcularTotal(
-          servico ? servico.value : "",
-          modalidade.value
-        );
+    Por isso o pagamento antigo
+    deixa de valer.
 
-      console.log(
-        "Modalidade alterada. Novo total:",
-        novoTotal
-      );
-    }
-  );
+    Data e horário permanecem.
+    */
+
+    invalidarPagamento();
+  });
 }
 
 
 // =====================================================
-// PIX — CAMPOS
+// PIX — CAMPO EMV
 // =====================================================
 
 function campoPix(id, valor) {
@@ -514,6 +500,7 @@ function crc16(payload) {
 
     resultado ^=
       payload.charCodeAt(i) << 8;
+
 
     for (
       let j = 0;
@@ -575,13 +562,32 @@ function gerarPixCopiaECola(valor) {
   let payload = "";
 
   payload += campoPix("00", "01");
+
   payload += contaPix;
-  payload += campoPix("52", "0000");
-  payload += campoPix("53", "986");
-  payload += campoPix("54", valorFormatado);
-  payload += campoPix("58", "BR");
-  payload += campoPix("59", "ESTRELA GUIA TAROT");
-  payload += campoPix("60", "ALEGRETE");
+
+  payload +=
+    campoPix("52", "0000");
+
+  payload +=
+    campoPix("53", "986");
+
+  payload +=
+    campoPix("54", valorFormatado);
+
+  payload +=
+    campoPix("58", "BR");
+
+  payload +=
+    campoPix(
+      "59",
+      "ESTRELA GUIA TAROT"
+    );
+
+  payload +=
+    campoPix(
+      "60",
+      "ALEGRETE"
+    );
 
   payload +=
     campoPix(
@@ -613,13 +619,19 @@ function montarMensagem(
   return [
 
     "✨ SOLICITAÇÃO DE AGENDAMENTO — ESTRELA GUIA TAROT",
+
     "",
 
     `Nome: ${dados.nome}`,
+
     `WhatsApp: ${dados.whatsapp}`,
+
     `Consulta: ${dados.servico}`,
+
     `Modalidade: ${dados.modalidade}`,
+
     `Data: ${dados.dia}`,
+
     `Horário: ${dados.horario}`,
 
     "",
@@ -638,7 +650,7 @@ function montarMensagem(
 
     "",
 
-    "⏳ Status: AGUARDANDO CONFIRMAÇÃO DO PAGAMENTO"
+    "⏳ Status: AGUARDANDO CONFIRMAÇÃO"
 
   ]
     .filter(Boolean)
@@ -664,7 +676,7 @@ function abrirWhatsapp(mensagem) {
 
 
 // =====================================================
-// MOSTRAR PIX
+// MOSTRAR PIX NA TELA
 // =====================================================
 
 function mostrarPagamentoPix(
@@ -674,8 +686,6 @@ function mostrarPagamentoPix(
   valorConsulta
 ) {
 
-  // Segurança extra:
-  // remove pagamento anterior.
   const anterior =
     document.getElementById(
       "pagamento-pix-gerado"
@@ -748,6 +758,7 @@ function mostrarPagamentoPix(
     document.createElement("button");
 
   botaoCopiar.type = "button";
+
   botaoCopiar.className =
     "botao botao-dourado";
 
@@ -796,7 +807,8 @@ function mostrarPagamentoPix(
   const aviso =
     document.createElement("p");
 
-  aviso.style.marginTop = "20px";
+  aviso.style.marginTop =
+    "20px";
 
   aviso.textContent =
     "Depois do pagamento, clique abaixo para enviar o comprovante pelo WhatsApp.";
@@ -805,7 +817,8 @@ function mostrarPagamentoPix(
   const botaoWhatsapp =
     document.createElement("button");
 
-  botaoWhatsapp.type = "button";
+  botaoWhatsapp.type =
+    "button";
 
   botaoWhatsapp.className =
     "botao botao-dourado";
@@ -822,10 +835,9 @@ function mostrarPagamentoPix(
     () => {
 
       /*
-      SEGURANÇA:
-      antes de abrir WhatsApp, confere se
-      consulta/modalidade ainda são as mesmas
-      usadas para gerar esse Pix.
+      Confere se a pessoa mudou
+      consulta/modalidade depois
+      de gerar o Pix.
       */
 
       if (
@@ -876,7 +888,7 @@ function mostrarPagamentoPix(
 
 
       mensagem +=
-        "\n\nCliente informou que realizou o pagamento.";
+        "\n\n✅ Cliente informou que realizou o pagamento.";
 
       mensagem +=
         "\n📎 Envie o comprovante nesta conversa.";
@@ -896,6 +908,7 @@ function mostrarPagamentoPix(
   caixa.appendChild(aviso);
   caixa.appendChild(botaoWhatsapp);
 
+
   formulario.appendChild(caixa);
 
 
@@ -907,7 +920,7 @@ function mostrarPagamentoPix(
 
 
 // =====================================================
-// ENVIO DO FORMULÁRIO
+// ENVIO DO FORMULÁRIO — ÚNICO
 // =====================================================
 
 if (formulario) {
@@ -919,11 +932,7 @@ if (formulario) {
       evento.preventDefault();
 
 
-      /*
-      IMPORTANTE:
-      lê TODOS os campos novamente neste exato momento.
-      Não reaproveita preço anterior.
-      */
+      // Lê tudo novamente no momento do envio.
 
       const dados = {
 
@@ -964,6 +973,10 @@ if (formulario) {
       };
 
 
+      // =================================================
+      // CAMPOS OBRIGATÓRIOS
+      // =================================================
+
       if (
         !dados.nome ||
         !dados.whatsapp ||
@@ -982,9 +995,91 @@ if (formulario) {
       }
 
 
-      /*
-      RECALCULA O VALOR AGORA.
-      */
+      // =================================================
+      // OUTRAS CIDADES
+      // =================================================
+
+      if (
+        dados.modalidade
+          .toLowerCase()
+          .includes("outra cidade")
+      ) {
+
+        const mensagemOutraCidade = [
+
+          "✨ CONSULTA DE DISPONIBILIDADE — ESTRELA GUIA TAROT",
+
+          "",
+
+          `Nome: ${dados.nome}`,
+
+          `WhatsApp: ${dados.whatsapp}`,
+
+          `Consulta: ${dados.servico}`,
+
+          `Modalidade: ${dados.modalidade}`,
+
+          `Data pretendida: ${dados.dia}`,
+
+          `Horário pretendido: ${dados.horario}`,
+
+          "",
+
+          "🚗 ATENDIMENTO EM OUTRA CIDADE",
+
+          "",
+
+          "Gostaria de consultar a disponibilidade e o valor do deslocamento.",
+
+          "",
+
+          "O valor total e a forma de pagamento serão confirmados após combinar o deslocamento."
+
+        ].join("\n");
+
+
+        abrirWhatsapp(
+          mensagemOutraCidade
+        );
+
+        return;
+      }
+
+
+      // =================================================
+      // DINHEIRO FÍSICO
+      // =================================================
+
+      const pagamentoEmDinheiro =
+        dados.pagamento
+          .toLowerCase()
+          .includes("dinheiro");
+
+
+      const atendimentoOnline =
+        dados.modalidade
+          .toLowerCase()
+          .includes("online");
+
+
+      if (
+        pagamentoEmDinheiro &&
+        atendimentoOnline
+      ) {
+
+        alert(
+          "Pagamento em dinheiro está disponível somente para atendimentos presenciais. Escolha Pix ou cartão de crédito para atendimento online."
+        );
+
+        pagamento.value = "";
+
+        return;
+      }
+
+
+      // =================================================
+      // RECALCULAR VALOR
+      // =================================================
 
       const valorConsulta =
         obterValorConsulta(
@@ -1013,155 +1108,107 @@ if (formulario) {
 
 
       // =================================================
+      // DINHEIRO — PRESENCIAL
+      // =================================================
+
+      if (pagamentoEmDinheiro) {
+
+        let mensagemDinheiro =
+          montarMensagem(
+            dados,
+            valorConsulta,
+            total,
+            "DINHEIRO FÍSICO — PAGAMENTO NO ATENDIMENTO"
+          );
+
+
+        mensagemDinheiro +=
+          "\n\n💵 Pagamento em dinheiro no momento do atendimento.";
+
+
+        abrirWhatsapp(
+          mensagemDinheiro
+        );
+
+        return;
+      }
+
+
+      // =================================================
       // PIX
       // =================================================
-// =====================================================
-// ENVIO DO FORMULÁRIO
-// =====================================================
 
-if (formulario) {
+      if (
+        dados.pagamento
+          .toLowerCase()
+          .includes("pix")
+      ) {
 
-  formulario.addEventListener("submit", (evento) => {
-
-    evento.preventDefault();
-
-    const dados = {
-      nome: nome ? nome.value.trim() : "",
-      whatsapp: whatsapp ? whatsapp.value.trim() : "",
-      servico: servico ? servico.value : "",
-      modalidade: modalidade ? modalidade.value : "",
-      dia: dia ? dia.value : "",
-      horario: horario ? horario.value : "",
-      pagamento: pagamento ? pagamento.value : ""
-    };
+        const codigoPix =
+          gerarPixCopiaECola(
+            total
+          );
 
 
-    // =================================================
-    // VALIDAÇÃO DOS CAMPOS
-    // =================================================
-
-    if (
-      !dados.nome ||
-      !dados.whatsapp ||
-      !dados.servico ||
-      !dados.modalidade ||
-      !dados.dia ||
-      !dados.horario ||
-      !dados.pagamento
-    ) {
-
-      alert("Preencha todos os dados do agendamento.");
-      return;
-    }
-
-
-    // =================================================
-    // OUTRA CIDADE
-    // =================================================
-
-    if (
-      dados.modalidade
-        .toLowerCase()
-        .includes("outra cidade")
-    ) {
-
-      const mensagemOutraCidade = [
-        "✨ SOLICITAÇÃO DE ATENDIMENTO — ESTRELA GUIA TAROT",
-        "",
-        `Nome: ${dados.nome}`,
-        `WhatsApp: ${dados.whatsapp}`,
-        `Consulta: ${dados.servico}`,
-        `Modalidade: ${dados.modalidade}`,
-        `Data pretendida: ${dados.dia}`,
-        `Horário pretendido: ${dados.horario}`,
-        "",
-        "🚗 ATENDIMENTO EM OUTRA CIDADE",
-        "",
-        "Gostaria de consultar a disponibilidade e o valor do deslocamento.",
-        "",
-        "O pagamento será combinado após a confirmação do valor do deslocamento."
-      ].join("\n");
-
-      abrirWhatsapp(mensagemOutraCidade);
-      return;
-    }
-
-
-    // =================================================
-    // DINHEIRO FÍSICO
-    // =================================================
-
-    const pagamentoEmDinheiro =
-      dados.pagamento
-        .toLowerCase()
-        .includes("dinheiro");
-
-
-    const atendimentoOnline =
-      dados.modalidade
-        .toLowerCase()
-        .includes("online");
-
-
-    if (
-      pagamentoEmDinheiro &&
-      atendimentoOnline
-    ) {
-
-      alert(
-        "Pagamento em dinheiro está disponível somente para atendimentos presenciais. Escolha Pix ou cartão de crédito para atendimento online."
-      );
-
-      pagamento.value = "";
-
-      return;
-    }
-
-
-    // =================================================
-    // CALCULAR VALORES
-    // =================================================
-
-    const valorConsulta =
-      obterValorConsulta(dados.servico);
-
-
-    const total =
-      calcularTotal(
-        dados.servico,
-        dados.modalidade
-      );
-
-
-    if (
-      valorConsulta === null ||
-      total === null
-    ) {
-
-      alert(
-        "Não foi possível calcular o valor do atendimento."
-      );
-
-      return;
-    }
-
-
-    // =================================================
-    // DINHEIRO — ATENDIMENTO PRESENCIAL
-    // =================================================
-
-    if (pagamentoEmDinheiro) {
-
-      let mensagemDinheiro =
-        montarMensagem(
-          dados,
-          valorConsulta,
+        mostrarPagamentoPix(
+          codigoPix,
           total,
-          "DINHEIRO FÍSICO — PAGAMENTO NO ATENDIMENTO"
+          dados,
+          valorConsulta
+        );
+
+        return;
+      }
+
+
+      // =================================================
+      // CARTÃO STONE
+      // =================================================
+
+      if (
+        dados.pagamento
+          .toLowerCase()
+          .includes("cart")
+      ) {
+
+        const linkPagamento =
+          linksStone[total];
+
+
+        if (!linkPagamento) {
+
+          alert(
+            `Não existe link Stone configurado para R$ ${formatarDinheiro(total)}.`
+          );
+
+          return;
+        }
+
+
+        localStorage.setItem(
+          "ultimoAgendamento",
+          JSON.stringify({
+            ...dados,
+            valorConsulta,
+            total
+          })
         );
 
 
-     
+        window.location.href =
+          linkPagamento;
+
+        return;
+      }
+
+
+      alert(
+        "Escolha Pix, cartão de crédito ou dinheiro físico."
+      );
+
+    }
+  );
+}
 
 
 // =====================================================
@@ -1172,7 +1219,9 @@ const musica =
   document.getElementById("musica");
 
 const botaoMusica =
-  document.getElementById("botao-musica");
+  document.getElementById(
+    "botao-musica"
+  );
 
 const listaMusicas = [
   "musica1.mp3",
@@ -1190,7 +1239,10 @@ let musicaAtual =
 let tocando = false;
 
 
-if (musica && botaoMusica) {
+if (
+  musica &&
+  botaoMusica
+) {
 
   musica.volume = 0.25;
 
@@ -1267,7 +1319,9 @@ if (musica && botaoMusica) {
 // =====================================================
 
 const botaoInstagram =
-  document.getElementById("instagram");
+  document.getElementById(
+    "instagram"
+  );
 
 if (botaoInstagram) {
 
@@ -1290,7 +1344,9 @@ if (botaoInstagram) {
 // =====================================================
 
 const botaoTema =
-  document.getElementById("botao-tema");
+  document.getElementById(
+    "botao-tema"
+  );
 
 const temaSistema =
   window.matchMedia(
@@ -1339,7 +1395,9 @@ temaSistema.addEventListener(
   "change",
   (evento) => {
 
-    if (!localStorage.getItem("tema")) {
+    if (
+      !localStorage.getItem("tema")
+    ) {
 
       aplicarTema(
         evento.matches
@@ -1362,12 +1420,15 @@ if (botaoTema) {
             "modo-noturno"
           );
 
+
       const novoTemaNoturno =
         !estaNoturno;
+
 
       aplicarTema(
         novoTemaNoturno
       );
+
 
       localStorage.setItem(
         "tema",
