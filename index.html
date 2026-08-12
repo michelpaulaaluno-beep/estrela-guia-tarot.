@@ -279,85 +279,88 @@ Cada consulta é realizada com respeito, ética, acolhimento e total sigilo, pro
         </div>
 
         <form id="formulario">
-          <label>
-            Nome completo
-            <input id="nome" type="text" required>
-          </label>
 
-          <label>
-            WhatsApp
-            <input id="whatsapp" type="tel" required>
-          </label>
-
-          <label>
-            Consulta
-            <select id="servico" required>
-  <option value="">Selecione o atendimento</option>
-
-  <optgroup label="🔮 Baralho Cigano">
-    <option>Uma Pergunta — R$ 15</option>
-    <option>Duas Perguntas — R$ 25</option>
-    <option>Consulta Completa — R$ 40</option>
-    <option>Relacionamento Amoroso — R$ 60</option>
-  </optgroup>
-
-  <optgroup label="💬 Espaço de Conversa & Escuta">
-    <option>Conversa & Escuta — 30 minutos — R$ 25</option>
-    <option>Conversa & Escuta — 60 minutos — R$ 40</option>
-  </optgroup>
-            </select>
-          </label>
-
-          <label>
-            Modalidade
-            <select id="modalidade" required>
-              <option value="">Selecione</option>
-              <option>Online</option>
-              <option>Presencial na minha residência</option>
-              <option>Presencial na casa do cliente em Alegrete (+ R$ 10)</option>
-              <option>Presencial em outra cidade — consultar valor</option>
-            </select>
-          </label>
-
-          
   <label>
-    Data
-    <input id="dia" type="date" required>
+    Nome completo
+    <input id="nome" type="text" required>
   </label>
 
   <label>
-    Horário
-    <select id="horario" required>
-      <option value="">Escolha uma data</option>
-      <option value="08:00">08:00</option>
-      <option value="09:00">09:00</option>
-      <option value="10:00">10:00</option>
-      <option value="11:00">11:00</option>
-      <option value="14:00">14:00</option>
-      <option value="15:00">15:00</option>
-      <option value="16:00">16:00</option>
-      <option value="17:00">17:00</option>
-      <option value="18:00">18:00</option>
-      <option value="19:00">19:00</option>
-      <option value="20:00">20:00</option>
+    WhatsApp
+    <input id="whatsapp" type="tel" required>
+  </label>
+
+  <label>
+    Consulta
+    <select id="servico" required>
+      <option value="">Selecione o atendimento</option>
+
+      <optgroup label="🔮 Baralho Cigano">
+        <option>Uma Pergunta — R$ 15</option>
+        <option>Duas Perguntas — R$ 25</option>
+        <option>Consulta Completa — R$ 40</option>
+        <option>Relacionamento Amoroso — R$ 60</option>
+      </optgroup>
+
+      <optgroup label="💬 Espaço de Conversa & Escuta">
+        <option>Conversa & Escuta — 30 minutos — R$ 25</option>
+        <option>Conversa & Escuta — 60 minutos — R$ 40</option>
+      </optgroup>
     </select>
   </label>
 
-</div>
+  <label>
+    Modalidade
+    <select id="modalidade" required>
+      <option value="">Selecione</option>
+      <option>Online</option>
+      <option>Presencial na minha residência</option>
+      <option>Presencial na casa do cliente em Alegrete (+ R$ 10)</option>
+      <option>Presencial em outra cidade — consultar valor</option>
+    </select>
+  </label>
 
-<label>
-  Forma de pagamento
-  <select id="pagamento" required>
-    <option value="">Selecione</option>
-    <option>Pix</option>
-    <option>Cartão de crédito</option>
-    <option>Dinheiro físico</option>
-  </select>
-</label>
+  <div class="linha">
 
-          <button class="botao botao-dourado enviar" type="submit">
-            Enviar pedido pelo WhatsApp
-          </button>
+    <label>
+      Data
+      <input id="dia" type="date" required>
+    </label>
+
+    <label>
+      Horário
+      <select id="horario" required>
+        <option value="">Escolha uma data</option>
+        <option value="08:00">08:00</option>
+        <option value="09:00">09:00</option>
+        <option value="10:00">10:00</option>
+        <option value="11:00">11:00</option>
+        <option value="14:00">14:00</option>
+        <option value="15:00">15:00</option>
+        <option value="16:00">16:00</option>
+        <option value="17:00">17:00</option>
+        <option value="18:00">18:00</option>
+        <option value="19:00">19:00</option>
+        <option value="20:00">20:00</option>
+      </select>
+    </label>
+
+  </div>
+
+  <label>
+    Forma de pagamento
+    <select id="pagamento" required>
+      <option value="">Selecione</option>
+      <option>Pix</option>
+      <option>Cartão de crédito</option>
+      <option>Dinheiro físico</option>
+    </select>
+  </label>
+
+  <button class="botao botao-dourado enviar" type="submit">
+    Enviar pedido pelo WhatsApp
+  </button>
+
         </form>
       </div>
     </section>
