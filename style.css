@@ -948,3 +948,37 @@ body.modo-noturno .marca img {
   }
 }
   
+/* ========================================
+   ALINHAMENTO FINAL DO FORMULÁRIO
+======================================== */
+
+#formulario {
+  width: 100%;
+}
+
+#formulario > label {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#formulario input,
+#formulario select {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#formulario .linha {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#formulario .linha > label {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+}
