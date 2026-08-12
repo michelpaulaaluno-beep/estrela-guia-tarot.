@@ -1606,3 +1606,51 @@ document.addEventListener(
     }
   }
 );
+/* ========================================
+   VERIFICAÇÃO DE HORÁRIOS
+======================================== */
+
+#carregando-agenda {
+  margin-top: 12px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  padding: 12px 16px;
+
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.08);
+
+  font-size: 14px;
+  text-align: center;
+}
+
+#carregando-agenda img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+
+  animation: estrelaGirando 1.8s linear infinite;
+}
+
+@keyframes estrelaGirando {
+
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.agenda-ok {
+  font-size: 22px;
+}
+
+.agenda-erro {
+  font-size: 22px;
+  font-weight: bold;
+}
