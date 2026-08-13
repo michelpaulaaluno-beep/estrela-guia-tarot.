@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
+
+  <meta
+    name="robots"
+    content="noindex,nofollow"
+  >
+
+  <title>
+    Administração — Estrela Guia Tarot
+  </title>
+
+  <style>
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f1e7;
+      color: #35271f;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #2c170d;
+      color: #fff;
+      padding: 24px 20px;
+      text-align: center;
+    }
+
+    header h1 {
+      color: #e1bd76;
+      margin-bottom: 6px;
+    }
+
+    header p {
+      opacity: .8;
+    }
+
+    main {
+      width: min(1200px, 94%);
+      margin: 35px auto;
+    }
+
+    .resumo {
+      display: grid;
+      grid-template-columns:
+        repeat(3, 1fr);
+      gap: 15px;
+      margin-bottom: 30px;
+    }
+
+    .resumo-card {
+      background: white;
+      padding: 22px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow:
+        0 8px 25px
+        rgba(0,0,0,.08);
+    }
+
+    .resumo-card strong {
+      display: block;
+      font-size: 30px;
+      color: #b9842f;
+      margin-top: 5px;
+    }
+
+    .barra {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 25px;
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .atualizar {
+      background: #b9842f;
+      color: white;
+    }
+
+    .lista {
+      display: grid;
+      gap: 18px;
+    }
+
+    .agendamento {
+      background: white;
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow:
+        0 8px 25px
+        rgba(0,0,0,.08);
+    }
+
+    .topo-card {
+      display: flex;
+      justify-content:
+        space-between;
+      gap: 15px;
+      align-items: flex-start;
+      margin-bottom: 18px;
+    }
+
+    .nome {
+      font-size: 22px;
+      font-weight: bold;
+      color: #4b2b18;
+    }
+
+    .status {
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .aguardando {
+      background: #fff0c7;
+      color: #765000;
+    }
+
+    .confirmado {
+      background: #d9f5df;
+      color: #176329;
+    }
+
+    .cancelado {
+      background: #f8dddd;
+      color: #8a2020;
+    }
+
+    .dados {
+      display: grid;
+      grid-template-columns:
+        repeat(2, 1fr);
+      gap: 10px 20px;
+    }
+
+    .dados p {
+      line-height: 1.5;
+    }
+
+    .acoes {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .confirmar {
+      background: #287a3e;
+      color: white;
+    }
+
+    .cancelar {
+      background: #a73535;
+      color: white;
+    }
+
+    .whatsapp {
+      background: #1f9d55;
+      color: white;
+    }
+
+    .mensagem {
+      text-align: center;
+      padding: 35px;
+      background: white;
+      border-radius: 18px;
+    }
+
+    @media(max-width:700px) {
+
+      .resumo {
+        grid-template-columns: 1fr;
+      }
+
+      .dados {
+        grid-template-columns: 1fr;
+      }
+
+      .topo-card {
+        flex-direction: column;
+      }
+
+      .acoes button {
+        width: 100%;
+      }
+
+    }
+
+  </style>
+</head>
+
+
+<body>
+
+<header>
+
+  <h1>
+    Estrela Guia Tarot
+  </h1>
+
+  <p>
+    Painel Administrativo
+  </p>
+
+</header>
+
+
+<main>
+
+  <section class="resumo">
+
+    <div class="resumo-card">
+      Aguardando
+      <strong id="total-aguardando">
+        0
+      </strong>
+    </div>
+
+    <div class="resumo-card">
+      Confirmados
+      <strong id="total-confirmados">
+        0
+      </strong>
+    </div>
+
+    <div class="resumo-card">
+      Cancelados
+      <strong id="total-cancelados">
+        0
+      </strong>
+    </div>
+
+  </section>
+
+
+  <div class="barra">
+
+    <button
+      class="atualizar"
+      id="atualizar"
+      type="button"
+    >
+      ↻ Atualizar agendamentos
+    </button>
+
+  </div>
+
+
+  <div
+    id="lista"
+    class="lista"
+  >
+
+    <div class="mensagem">
+      Carregando agendamentos...
+    </div>
+
+  </div>
+
+</main>
+
+
+<script>
+
+// =====================================================
+// CONFIGURAÇÃO
+// =====================================================
+
+const API =
+  "https://script.google.com/macros/s/AKfycbwudF762R7finLbS9O9lpUltmN38aIH8AU0gumE9dLi0UgQz9tccHybgS7dyrO-eNc3Yw/exec";
+
+
+const lista =
+  document.getElementById(
+    "lista"
+  );
+
+
+const botaoAtualizar =
+  document.getElementById(
+    "atualizar"
+  );
+
+
+// =====================================================
+// SEGURANÇA PARA TEXTO
+// =====================================================
+
+function escapar(texto) {
+
+  const elemento =
+    document.createElement(
+      "div"
+    );
+
+  elemento.textContent =
+    texto == null
+      ? ""
+      : String(texto);
+
+  return elemento.innerHTML;
+}
+
+
+// =====================================================
+// CARREGAR
+// =====================================================
+
+async function carregar() {
+
+  lista.innerHTML =
+    '<div class="mensagem">Carregando agendamentos...</div>';
+
+
+  try {
+
+    const resposta =
+      await fetch(
+        API +
+        "?acao=listar&t=" +
+        Date.now(),
+        {
+          cache: "no-store"
+        }
+      );
+
+
+    const dados =
+      await resposta.json();
+
+
+    if (
+      !dados.sucesso
+    ) {
+
+      throw new Error(
+        dados.erro ||
+        "Não foi possível carregar."
+      );
+    }
+
+
+    mostrar(
+      dados.agendamentos || []
+    );
+
+
+  } catch (erro) {
+
+    console.error(
+      erro
+    );
+
+
+    lista.innerHTML =
+      '<div class="mensagem">' +
+      'Não foi possível carregar os agendamentos.' +
+      '</div>';
+  }
+}
+
+
+// =====================================================
+// MOSTRAR
+// =====================================================
+
+function mostrar(
+  agendamentos
+) {
+
+  const aguardando =
+    agendamentos.filter(
+      item =>
+        item.status ===
+        "AGUARDANDO"
+    ).length;
+
+
+  const confirmados =
+    agendamentos.filter(
+      item =>
+        item.status ===
+        "CONFIRMADO"
+    ).length;
+
+
+  const cancelados =
+    agendamentos.filter(
+      item =>
+        item.status ===
+        "CANCELADO"
+    ).length;
+
+
+  document.getElementById(
+    "total-aguardando"
+  ).textContent =
+    aguardando;
+
+
+  document.getElementById(
+    "total-confirmados"
+  ).textContent =
+    confirmados;
+
+
+  document.getElementById(
+    "total-cancelados"
+  ).textContent =
+    cancelados;
+
+
+  if (
+    agendamentos.length === 0
+  ) {
+
+    lista.innerHTML =
+      '<div class="mensagem">' +
+      'Nenhum agendamento recebido ainda.' +
+      '</div>';
+
+    return;
+  }
+
+
+  lista.innerHTML =
+    agendamentos
+      .map(
+        criarCard
+      )
+      .join("");
+}
+
+
+// =====================================================
+// CARD
+// =====================================================
+
+function criarCard(
+  item
+) {
+
+  const status =
+    item.status ||
+    "AGUARDANDO";
+
+
+  let classeStatus =
+    "aguardando";
+
+
+  if (
+    status ===
+    "CONFIRMADO"
+  ) {
+
+    classeStatus =
+      "confirmado";
+  }
+
+
+  if (
+    status ===
+    "CANCELADO"
+  ) {
+
+    classeStatus =
+      "cancelado";
+  }
+
+
+  const telefone =
+    String(
+      item.whatsapp || ""
+    )
+      .replace(
+        /\D/g,
+        ""
+      );
+
+
+  let telefoneWhatsapp =
+    telefone;
+
+
+  if (
+    telefoneWhatsapp &&
+    !telefoneWhatsapp.startsWith(
+      "55"
+    )
+  ) {
+
+    telefoneWhatsapp =
+      "55" +
+      telefoneWhatsapp;
+  }
+
+
+  return `
+
+    <article class="agendamento">
+
+      <div class="topo-card">
+
+        <div class="nome">
+          ${escapar(item.nome)}
+        </div>
+
+        <span
+          class="status ${classeStatus}"
+        >
+          ${escapar(status)}
+        </span>
+
+      </div>
+
+
+      <div class="dados">
+
+        <p>
+          <strong>WhatsApp:</strong>
+          ${escapar(item.whatsapp)}
+        </p>
+
+        <p>
+          <strong>Data:</strong>
+          ${escapar(item.data)}
+        </p>
+
+        <p>
+          <strong>Horário:</strong>
+          ${escapar(item.horario)}
+        </p>
+
+        <p>
+          <strong>Consulta:</strong>
+          ${escapar(item.servico)}
+        </p>
+
+        <p>
+          <strong>Modalidade:</strong>
+          ${escapar(item.modalidade)}
+        </p>
+
+        <p>
+          <strong>Pagamento:</strong>
+          ${escapar(item.pagamento)}
+        </p>
+
+        <p>
+          <strong>Valor:</strong>
+          ${escapar(item.valor)}
+        </p>
+
+      </div>
+
+
+      <div class="acoes">
+
+        ${
+          status !==
+          "CONFIRMADO"
+
+          ?
+
+          `
+          <button
+            class="confirmar"
+            onclick="alterarStatus(
+              '${escapar(item.id)}',
+              'confirmar'
+            )"
+          >
+            ✓ Confirmar
+          </button>
+          `
+
+          :
+
+          ""
+        }
+
+
+        ${
+          status !==
+          "CANCELADO"
+
+          ?
+
+          `
+          <button
+            class="cancelar"
+            onclick="alterarStatus(
+              '${escapar(item.id)}',
+              'cancelar'
+            )"
+          >
+            ✕ Cancelar
+          </button>
+          `
+
+          :
+
+          ""
+        }
+
+
+        ${
+          telefoneWhatsapp
+
+          ?
+
+          `
+          <button
+            class="whatsapp"
+            onclick="abrirWhatsApp(
+              '${telefoneWhatsapp}'
+            )"
+          >
+            WhatsApp
+          </button>
+          `
+
+          :
+
+          ""
+        }
+
+      </div>
+
+    </article>
+
+  `;
+}
+
+
+// =====================================================
+// CONFIRMAR / CANCELAR
+// =====================================================
+
+async function alterarStatus(
+  id,
+  acao
+) {
+
+  const texto =
+    acao ===
+    "confirmar"
+      ? "confirmar"
+      : "cancelar";
+
+
+  if (
+    !confirm(
+      `Deseja realmente ${texto} este agendamento?`
+    )
+  ) {
+
+    return;
+  }
+
+
+  try {
+
+    const resposta =
+      await fetch(
+        API,
+        {
+          method:
+            "POST",
+
+          headers: {
+            "Content-Type":
+              "text/plain;charset=utf-8"
+          },
+
+          body:
+            JSON.stringify({
+              acao:
+                acao,
+
+              id:
+                id
+            })
+        }
+      );
+
+
+    const dados =
+      await resposta.json();
+
+
+    if (
+      !dados.sucesso
+    ) {
+
+      alert(
+        dados.erro ||
+        "Não foi possível realizar a operação."
+      );
+
+      return;
+    }
+
+
+    alert(
+      dados.mensagem ||
+      "Operação realizada."
+    );
+
+
+    await carregar();
+
+
+  } catch (erro) {
+
+    console.error(
+      erro
+    );
+
+
+    alert(
+      "Não foi possível comunicar com o sistema."
+    );
+  }
+}
+
+
+// =====================================================
+// WHATSAPP
+// =====================================================
+
+function abrirWhatsApp(
+  telefone
+) {
+
+  window.open(
+    "https://wa.me/" +
+    telefone,
+    "_blank"
+  );
+}
+
+
+// =====================================================
+// ATUALIZAR
+// =====================================================
+
+botaoAtualizar
+  .addEventListener(
+    "click",
+    carregar
+  );
+
+
+// =====================================================
+// INICIAR
+// =====================================================
+
+carregar();
+
+</script>
+
+</body>
+</html>
