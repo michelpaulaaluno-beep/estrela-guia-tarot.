@@ -94,7 +94,7 @@ if (dia) {
 
 
 // =====================================================
-// GOOGLE AGENDA — NORMALIZAR HORÁRIO
+// NORMALIZAR HORÁRIO
 // =====================================================
 
 function normalizarHora(valor) {
@@ -116,14 +116,18 @@ function normalizarHora(valor) {
 }
 
 
+// =====================================================
+// PREENCHER HORÁRIOS
+// =====================================================
+
 function mostrarHorarios(ocupados = []) {
 
   if (!horario) {
     return;
   }
 
-  // Guarda o horário que a pessoa já escolheu.
-  const horarioSelecionado = horario.value;
+  const horarioSelecionado =
+    horario.value;
 
   horario.innerHTML =
     '<option value="">Selecione um horário</option>';
@@ -157,7 +161,6 @@ function mostrarHorarios(ocupados = []) {
         return hora === inicio;
       });
 
-
     if (!ocupado) {
 
       const opcao =
@@ -166,8 +169,6 @@ function mostrarHorarios(ocupados = []) {
       opcao.value = hora;
       opcao.textContent = hora;
 
-      // Se era o horário escolhido,
-      // mantém ele selecionado.
       if (hora === horarioSelecionado) {
         opcao.selected = true;
         horarioAindaDisponivel = true;
@@ -179,13 +180,10 @@ function mostrarHorarios(ocupados = []) {
     }
   });
 
-
   if (quantidadeLivres > 0) {
 
     horario.disabled = false;
 
-    // Segurança extra para preservar
-    // a escolha depois da resposta do Google.
     if (
       horarioSelecionado &&
       horarioAindaDisponivel
@@ -217,7 +215,6 @@ async function consultarAgenda(dataSelecionada) {
       controlador.abort();
     }, 4000);
 
-
   try {
 
     const url =
@@ -231,7 +228,6 @@ async function consultarAgenda(dataSelecionada) {
         signal: controlador.signal
       });
 
-
     if (!resposta.ok) {
 
       throw new Error(
@@ -239,16 +235,15 @@ async function consultarAgenda(dataSelecionada) {
       );
     }
 
-
     const texto =
       await resposta.text();
 
     let dados;
 
-
     try {
 
-      dados = JSON.parse(texto);
+      dados =
+        JSON.parse(texto);
 
     } catch {
 
@@ -257,14 +252,16 @@ async function consultarAgenda(dataSelecionada) {
       );
     }
 
-
-    if (dados && dados.sucesso === false) {
+    if (
+      dados &&
+      dados.sucesso === false
+    ) {
 
       throw new Error(
-        dados.erro || "Erro retornado pela Agenda."
+        dados.erro ||
+        "Erro retornado pela Agenda."
       );
     }
-
 
     if (
       dados &&
@@ -274,15 +271,12 @@ async function consultarAgenda(dataSelecionada) {
       return dados.ocupados;
     }
 
-
     if (Array.isArray(dados)) {
 
       return dados;
     }
 
-
     return [];
-
 
   } finally {
 
@@ -292,7 +286,7 @@ async function consultarAgenda(dataSelecionada) {
 
 
 // =====================================================
-// ESCOLHA DA DATA
+// ESCOLHA DA DATA / LIBERAÇÃO DOS HORÁRIOS
 // =====================================================
 
 if (dia && horario) {
@@ -302,147 +296,134 @@ if (dia && horario) {
   horario.innerHTML =
     '<option value="">Escolha uma data</option>';
 
-  dia.addEventListener("change", async () => {
+  dia.addEventListener(
+    "change",
+    async () => {
 
-    if (!dia.value) {
+      if (!dia.value) {
 
-      horario.innerHTML =
-        '<option value="">Escolha uma data</option>';
+        horario.innerHTML =
+          '<option value="">Escolha uma data</option>';
 
-      horario.disabled = true;
+        horario.disabled = true;
 
-      return;
-    }
-
-
-    // ---------------------------------------------
-    // 1. LIBERA OS HORÁRIOS IMEDIATAMENTE
-    // ---------------------------------------------
-
-    horario.innerHTML =
-      '<option value="">Selecione um horário</option>';
-
-    horariosDisponiveis.forEach((hora) => {
-
-      const opcao =
-        document.createElement("option");
-
-      opcao.value = hora;
-      opcao.textContent = hora;
-
-      horario.appendChild(opcao);
-    });
-
-    horario.disabled = false;
-
-
-    // ---------------------------------------------
-    // 2. CONSULTA GOOGLE AGENDA EM SEGUNDO PLANO
-    // SEM APAGAR OU RECRIAR O CAMPO
-    // ---------------------------------------------
-
-    try {
-
-      const ocupados =
-        await consultarAgenda(dia.value);
-
-
-      horario
-        .querySelectorAll("option")
-        .forEach((opcao) => {
-
-          if (!opcao.value) {
-            return;
-          }
-
-
-          const hora =
-            opcao.value;
-
-
-          const estaOcupado =
-            ocupados.some((evento) => {
-
-              if (!evento) {
-                return false;
-              }
-
-              const inicio =
-                normalizarHora(evento.inicio);
-
-              const fim =
-                normalizarHora(evento.fim);
-
-
-              if (!inicio) {
-                return false;
-              }
-
-
-              if (fim) {
-
-                return (
-                  hora >= inicio &&
-                  hora < fim
-                );
-              }
-
-
-              return hora === inicio;
-            });
-
-
-          if (estaOcupado) {
-
-            opcao.disabled = true;
-
-            opcao.textContent =
-              `${hora} — indisponível`;
-          }
-
-        });
-
-
-      // Se a pessoa já escolheu um horário
-      // e o Google informou que ele está ocupado,
-      // avisa e limpa somente esse horário.
-
-      const selecionado =
-        horario.options[
-          horario.selectedIndex
-        ];
-
-
-      if (
-        selecionado &&
-        selecionado.disabled
-      ) {
-
-        horario.value = "";
-
-        alert(
-          "Esse horário acabou de ficar indisponível. Escolha outro horário."
-        );
+        return;
       }
 
 
-    } catch (erro) {
+      // Libera os horários imediatamente.
+      horario.innerHTML =
+        '<option value="">Selecione um horário</option>';
 
-      console.warn(
-        "Não foi possível consultar o Google Agenda:",
-        erro
+      horariosDisponiveis.forEach(
+        (hora) => {
+
+          const opcao =
+            document.createElement("option");
+
+          opcao.value = hora;
+          opcao.textContent = hora;
+
+          horario.appendChild(opcao);
+        }
       );
 
-      /*
-      Se o Google falhar:
-      NÃO APAGA O HORÁRIO.
-      NÃO TRAVA O CAMPO.
-      NÃO FAZ PISCAR.
-      */
+      horario.disabled = false;
 
+
+      // Consulta a agenda depois, sem travar
+      // o campo de horário.
+      try {
+
+        const ocupados =
+          await consultarAgenda(
+            dia.value
+          );
+
+        horario
+          .querySelectorAll("option")
+          .forEach((opcao) => {
+
+            if (!opcao.value) {
+              return;
+            }
+
+            const hora =
+              opcao.value;
+
+            const estaOcupado =
+              ocupados.some(
+                (evento) => {
+
+                  if (!evento) {
+                    return false;
+                  }
+
+                  const inicio =
+                    normalizarHora(
+                      evento.inicio
+                    );
+
+                  const fim =
+                    normalizarHora(
+                      evento.fim
+                    );
+
+                  if (!inicio) {
+                    return false;
+                  }
+
+                  if (fim) {
+
+                    return (
+                      hora >= inicio &&
+                      hora < fim
+                    );
+                  }
+
+                  return hora === inicio;
+                }
+              );
+
+            if (estaOcupado) {
+
+              opcao.disabled = true;
+
+              opcao.textContent =
+                `${hora} — indisponível`;
+            }
+          });
+
+
+        const selecionado =
+          horario.options[
+            horario.selectedIndex
+          ];
+
+        if (
+          selecionado &&
+          selecionado.disabled
+        ) {
+
+          horario.value = "";
+
+          alert(
+            "Esse horário acabou de ficar indisponível. Escolha outro horário."
+          );
+        }
+
+      } catch (erro) {
+
+        console.warn(
+          "Não foi possível consultar o Google Agenda:",
+          erro
+        );
+
+        // Se a agenda falhar,
+        // os horários continuam liberados.
+      }
     }
-
-  });
+  );
 }
 
 
@@ -482,17 +463,16 @@ function calcularTotal(
 ) {
 
   const valorConsulta =
-    obterValorConsulta(servicoSelecionado);
+    obterValorConsulta(
+      servicoSelecionado
+    );
 
   if (valorConsulta === null) {
     return null;
   }
 
-  let total = valorConsulta;
-
-
-  // R$ 10 de deslocamento somente
-  // para casa do cliente em Alegrete.
+  let total =
+    valorConsulta;
 
   if (
     modalidadeSelecionada &&
@@ -503,7 +483,6 @@ function calcularTotal(
 
     total += 10;
   }
-
 
   return total;
 }
@@ -536,11 +515,9 @@ function invalidarPagamento() {
     caixaPix.remove();
   }
 
-
   localStorage.removeItem(
     "ultimoAgendamento"
   );
-
 
   if (pagamento) {
     pagamento.value = "";
@@ -554,18 +531,13 @@ function invalidarPagamento() {
 
 if (servico) {
 
-  servico.addEventListener("change", () => {
+  servico.addEventListener(
+    "change",
+    () => {
 
-    /*
-    IMPORTANTE:
-    limpa somente o PAGAMENTO.
-
-    Não mexe na data.
-    Não mexe no horário.
-    */
-
-    invalidarPagamento();
-  });
+      invalidarPagamento();
+    }
+  );
 }
 
 
@@ -575,20 +547,13 @@ if (servico) {
 
 if (modalidade) {
 
-  modalidade.addEventListener("change", () => {
+  modalidade.addEventListener(
+    "change",
+    () => {
 
-    /*
-    O preço pode mudar por causa
-    do deslocamento.
-
-    Por isso o pagamento antigo
-    deixa de valer.
-
-    Data e horário permanecem.
-    */
-
-    invalidarPagamento();
-  });
+      invalidarPagamento();
+    }
+  );
 }
 
 
@@ -598,7 +563,8 @@ if (modalidade) {
 
 function campoPix(id, valor) {
 
-  const texto = String(valor);
+  const texto =
+    String(valor);
 
   const tamanho =
     String(texto.length)
@@ -614,7 +580,8 @@ function campoPix(id, valor) {
 
 function crc16(payload) {
 
-  let resultado = 0xFFFF;
+  let resultado =
+    0xFFFF;
 
   for (
     let i = 0;
@@ -625,17 +592,19 @@ function crc16(payload) {
     resultado ^=
       payload.charCodeAt(i) << 8;
 
-
     for (
       let j = 0;
       j < 8;
       j++
     ) {
 
-      if ((resultado & 0x8000) !== 0) {
+      if (
+        (resultado & 0x8000) !== 0
+      ) {
 
         resultado =
-          (resultado << 1) ^ 0x1021;
+          (resultado << 1) ^
+          0x1021;
 
       } else {
 
@@ -643,10 +612,10 @@ function crc16(payload) {
           resultado << 1;
       }
 
-      resultado &= 0xFFFF;
+      resultado &=
+        0xFFFF;
     }
   }
-
 
   return resultado
     .toString(16)
@@ -680,14 +649,16 @@ function gerarPixCopiaECola(valor) {
     );
 
   const valorFormatado =
-    Number(valor).toFixed(2);
-
+    Number(valor)
+      .toFixed(2);
 
   let payload = "";
 
-  payload += campoPix("00", "01");
+  payload +=
+    campoPix("00", "01");
 
-  payload += contaPix;
+  payload +=
+    contaPix;
 
   payload +=
     campoPix("52", "0000");
@@ -696,7 +667,10 @@ function gerarPixCopiaECola(valor) {
     campoPix("53", "986");
 
   payload +=
-    campoPix("54", valorFormatado);
+    campoPix(
+      "54",
+      valorFormatado
+    );
 
   payload +=
     campoPix("58", "BR");
@@ -721,7 +695,8 @@ function gerarPixCopiaECola(valor) {
 
   payload += "6304";
 
-  return payload + crc16(payload);
+  return payload +
+    crc16(payload);
 }
 
 
@@ -738,7 +713,6 @@ function montarMensagem(
 
   const temDeslocamento =
     total > valorConsulta;
-
 
   return [
 
@@ -819,19 +793,29 @@ function mostrarPagamentoPix(
     anterior.remove();
   }
 
-
   const caixa =
     document.createElement("div");
 
   caixa.id =
     "pagamento-pix-gerado";
 
-  caixa.style.marginTop = "24px";
-  caixa.style.padding = "22px";
-  caixa.style.borderRadius = "14px";
-  caixa.style.background = "#ffffff";
-  caixa.style.color = "#222222";
-  caixa.style.textAlign = "center";
+  caixa.style.marginTop =
+    "24px";
+
+  caixa.style.padding =
+    "22px";
+
+  caixa.style.borderRadius =
+    "14px";
+
+  caixa.style.background =
+    "#ffffff";
+
+  caixa.style.color =
+    "#222222";
+
+  caixa.style.textAlign =
+    "center";
 
 
   const titulo =
@@ -844,8 +828,11 @@ function mostrarPagamentoPix(
   const valor =
     document.createElement("p");
 
-  valor.style.fontSize = "26px";
-  valor.style.fontWeight = "bold";
+  valor.style.fontSize =
+    "26px";
+
+  valor.style.fontWeight =
+    "bold";
 
   valor.textContent =
     `R$ ${formatarDinheiro(total)}`;
@@ -868,20 +855,33 @@ function mostrarPagamentoPix(
   const codigo =
     document.createElement("textarea");
 
-  codigo.value = codigoPix;
-  codigo.readOnly = true;
-  codigo.rows = 5;
+  codigo.value =
+    codigoPix;
 
-  codigo.style.width = "100%";
-  codigo.style.boxSizing = "border-box";
-  codigo.style.padding = "12px";
-  codigo.style.marginTop = "10px";
+  codigo.readOnly =
+    true;
+
+  codigo.rows =
+    5;
+
+  codigo.style.width =
+    "100%";
+
+  codigo.style.boxSizing =
+    "border-box";
+
+  codigo.style.padding =
+    "12px";
+
+  codigo.style.marginTop =
+    "10px";
 
 
   const botaoCopiar =
     document.createElement("button");
 
-  botaoCopiar.type = "button";
+  botaoCopiar.type =
+    "button";
 
   botaoCopiar.className =
     "botao botao-dourado";
@@ -912,7 +912,9 @@ function mostrarPagamentoPix(
 
         try {
 
-          document.execCommand("copy");
+          document.execCommand(
+            "copy"
+          );
 
           botaoCopiar.textContent =
             "✓ Código Pix copiado";
@@ -958,15 +960,11 @@ function mostrarPagamentoPix(
     "click",
     () => {
 
-      /*
-      Confere se a pessoa mudou
-      consulta/modalidade depois
-      de gerar o Pix.
-      */
-
       if (
-        servico.value !== dados.servico ||
-        modalidade.value !== dados.modalidade
+        servico.value !==
+          dados.servico ||
+        modalidade.value !==
+          dados.modalidade
       ) {
 
         caixa.remove();
@@ -988,7 +986,9 @@ function mostrarPagamentoPix(
         );
 
 
-      if (totalAtual !== total) {
+      if (
+        totalAtual !== total
+      ) {
 
         caixa.remove();
 
@@ -1018,22 +1018,49 @@ function mostrarPagamentoPix(
         "\n📎 Envie o comprovante nesta conversa.";
 
 
-      abrirWhatsapp(mensagem);
+      abrirWhatsapp(
+        mensagem
+      );
     }
   );
 
 
-  caixa.appendChild(titulo);
-  caixa.appendChild(valor);
-  caixa.appendChild(resumo);
-  caixa.appendChild(instrucao);
-  caixa.appendChild(codigo);
-  caixa.appendChild(botaoCopiar);
-  caixa.appendChild(aviso);
-  caixa.appendChild(botaoWhatsapp);
+  caixa.appendChild(
+    titulo
+  );
+
+  caixa.appendChild(
+    valor
+  );
+
+  caixa.appendChild(
+    resumo
+  );
+
+  caixa.appendChild(
+    instrucao
+  );
+
+  caixa.appendChild(
+    codigo
+  );
+
+  caixa.appendChild(
+    botaoCopiar
+  );
+
+  caixa.appendChild(
+    aviso
+  );
+
+  caixa.appendChild(
+    botaoWhatsapp
+  );
 
 
-  formulario.appendChild(caixa);
+  formulario.appendChild(
+    caixa
+  );
 
 
   caixa.scrollIntoView({
@@ -1044,7 +1071,7 @@ function mostrarPagamentoPix(
 
 
 // =====================================================
-// ENVIO DO FORMULÁRIO — ÚNICO
+// ENVIO DO FORMULÁRIO
 // =====================================================
 
 if (formulario) {
@@ -1055,8 +1082,6 @@ if (formulario) {
 
       evento.preventDefault();
 
-
-      // Lê tudo novamente no momento do envio.
 
       const dados = {
 
@@ -1097,9 +1122,7 @@ if (formulario) {
       };
 
 
-      // =================================================
       // CAMPOS OBRIGATÓRIOS
-      // =================================================
 
       if (
         !dados.nome ||
@@ -1119,9 +1142,7 @@ if (formulario) {
       }
 
 
-      // =================================================
       // OUTRAS CIDADES
-      // =================================================
 
       if (
         dados.modalidade
@@ -1170,9 +1191,7 @@ if (formulario) {
       }
 
 
-      // =================================================
       // DINHEIRO FÍSICO
-      // =================================================
 
       const pagamentoEmDinheiro =
         dados.pagamento
@@ -1201,9 +1220,7 @@ if (formulario) {
       }
 
 
-      // =================================================
       // RECALCULAR VALOR
-      // =================================================
 
       const valorConsulta =
         obterValorConsulta(
@@ -1231,11 +1248,11 @@ if (formulario) {
       }
 
 
-      // =================================================
       // DINHEIRO — PRESENCIAL
-      // =================================================
 
-      if (pagamentoEmDinheiro) {
+      if (
+        pagamentoEmDinheiro
+      ) {
 
         let mensagemDinheiro =
           montarMensagem(
@@ -1258,9 +1275,7 @@ if (formulario) {
       }
 
 
-      // =================================================
       // PIX
-      // =================================================
 
       if (
         dados.pagamento
@@ -1285,9 +1300,7 @@ if (formulario) {
       }
 
 
-      // =================================================
       // CARTÃO STONE
-      // =================================================
 
       if (
         dados.pagamento
@@ -1329,7 +1342,6 @@ if (formulario) {
       alert(
         "Escolha Pix, cartão de crédito ou dinheiro físico."
       );
-
     }
   );
 }
@@ -1340,7 +1352,9 @@ if (formulario) {
 // =====================================================
 
 const musica =
-  document.getElementById("musica");
+  document.getElementById(
+    "musica"
+  );
 
 const botaoMusica =
   document.getElementById(
@@ -1360,7 +1374,8 @@ let musicaAtual =
     listaMusicas.length
   );
 
-let tocando = false;
+let tocando =
+  false;
 
 
 if (
@@ -1368,10 +1383,13 @@ if (
   botaoMusica
 ) {
 
-  musica.volume = 0.25;
+  musica.volume =
+    0.25;
 
   musica.src =
-    listaMusicas[musicaAtual];
+    listaMusicas[
+      musicaAtual
+    ];
 
 
   botaoMusica.addEventListener(
@@ -1418,7 +1436,9 @@ if (
         listaMusicas.length;
 
       musica.src =
-        listaMusicas[musicaAtual];
+        listaMusicas[
+          musicaAtual
+        ];
 
       try {
 
@@ -1480,10 +1500,12 @@ const temaSistema =
 
 function aplicarTema(noturno) {
 
-  document.body.classList.toggle(
-    "modo-noturno",
-    noturno
-  );
+  document.body
+    .classList
+    .toggle(
+      "modo-noturno",
+      noturno
+    );
 
   if (botaoTema) {
 
@@ -1496,14 +1518,20 @@ function aplicarTema(noturno) {
 
 
 const temaSalvo =
-  localStorage.getItem("tema");
+  localStorage.getItem(
+    "tema"
+  );
 
 
-if (temaSalvo === "noturno") {
+if (
+  temaSalvo === "noturno"
+) {
 
   aplicarTema(true);
 
-} else if (temaSalvo === "claro") {
+} else if (
+  temaSalvo === "claro"
+) {
 
   aplicarTema(false);
 
@@ -1520,7 +1548,9 @@ temaSistema.addEventListener(
   (evento) => {
 
     if (
-      !localStorage.getItem("tema")
+      !localStorage.getItem(
+        "tema"
+      )
     ) {
 
       aplicarTema(
@@ -1579,7 +1609,9 @@ document.addEventListener(
       );
 
 
-    if (secoes.length > 0) {
+    if (
+      secoes.length > 0
+    ) {
 
       secoes[0]
         .classList
@@ -1607,11 +1639,14 @@ document.addEventListener(
 
                   entrada.target
                     .classList
-                    .add("ativo");
+                    .add(
+                      "ativo"
+                    );
 
-                  observador.unobserve(
-                    entrada.target
-                  );
+                  observador
+                    .unobserve(
+                      entrada.target
+                    );
                 }
               }
             );
@@ -1631,7 +1666,9 @@ document.addEventListener(
             "revelar"
           );
 
-          if (indice > 0) {
+          if (
+            indice > 0
+          ) {
 
             observador.observe(
               secao
@@ -1654,21 +1691,69 @@ document.addEventListener(
     }
   }
 );
+
+
 // =====================================================
 // MENSAGEM DENTRO DO CAMPO DATA
 // =====================================================
 
-const mensagemData = document.getElementById("mensagem-data");
+const mensagemData =
+  document.getElementById(
+    "mensagem-data"
+  );
 
-if (dia && mensagemData) {
+const campoData =
+  document.querySelector(
+    ".campo-data"
+  );
 
-  function atualizarMensagemData() {
-    mensagemData.style.display =
-      dia.value ? "none" : "block";
+
+function atualizarMensagemData() {
+
+  if (
+    !dia ||
+    !mensagemData ||
+    !campoData
+  ) {
+    return;
   }
 
-  dia.addEventListener("change", atualizarMensagemData);
-  dia.addEventListener("input", atualizarMensagemData);
+  if (dia.value) {
+
+    campoData.classList.add(
+      "tem-data"
+    );
+
+    mensagemData.style.display =
+      "none";
+
+  } else {
+
+    campoData.classList.remove(
+      "tem-data"
+    );
+
+    mensagemData.style.display =
+      "block";
+  }
+}
+
+
+if (
+  dia &&
+  mensagemData &&
+  campoData
+) {
+
+  dia.addEventListener(
+    "change",
+    atualizarMensagemData
+  );
+
+  dia.addEventListener(
+    "input",
+    atualizarMensagemData
+  );
 
   atualizarMensagemData();
-}
+  }
