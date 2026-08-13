@@ -1,5 +1,6 @@
 // =====================================================
 // ESTRELA GUIA TAROT — SCRIPT.JS
+// VERSÃO CORRIGIDA — ANDROID + IPHONE / SAFARI
 // =====================================================
 
 
@@ -50,24 +51,61 @@ const linksStone = {
 // ELEMENTOS
 // =====================================================
 
-const dia = document.getElementById("dia");
-const horario = document.getElementById("horario");
-const servico = document.getElementById("servico");
-const formulario = document.getElementById("formulario");
-const modalidade = document.getElementById("modalidade");
-const pagamento = document.getElementById("pagamento");
-const nome = document.getElementById("nome");
-const whatsapp = document.getElementById("whatsapp");
+const dia =
+  document.getElementById("dia");
+
+const horario =
+  document.getElementById("horario");
+
+const servico =
+  document.getElementById("servico");
+
+const formulario =
+  document.getElementById("formulario");
+
+const modalidade =
+  document.getElementById("modalidade");
+
+const pagamento =
+  document.getElementById("pagamento");
+
+const nome =
+  document.getElementById("nome");
+
+const whatsapp =
+  document.getElementById("whatsapp");
+
+
+// =====================================================
+// PROTEÇÃO DO FORMULÁRIO
+// SAFARI / IOS
+// =====================================================
+
+if (formulario) {
+
+  formulario.setAttribute(
+    "action",
+    "javascript:void(0)"
+  );
+
+  formulario.setAttribute(
+    "method",
+    "post"
+  );
+}
 
 
 // =====================================================
 // ANO AUTOMÁTICO
 // =====================================================
 
-const elementoAno = document.getElementById("ano");
+const elementoAno =
+  document.getElementById("ano");
 
 if (elementoAno) {
-  elementoAno.textContent = new Date().getFullYear();
+
+  elementoAno.textContent =
+    new Date().getFullYear();
 }
 
 
@@ -77,19 +115,24 @@ if (elementoAno) {
 
 if (dia) {
 
-  const hoje = new Date();
+  const hoje =
+    new Date();
 
-  const ano = hoje.getFullYear();
+  const ano =
+    hoje.getFullYear();
 
   const mes =
-    String(hoje.getMonth() + 1)
-      .padStart(2, "0");
+    String(
+      hoje.getMonth() + 1
+    ).padStart(2, "0");
 
   const data =
-    String(hoje.getDate())
-      .padStart(2, "0");
+    String(
+      hoje.getDate()
+    ).padStart(2, "0");
 
-  dia.min = `${ano}-${mes}-${data}`;
+  dia.min =
+    `${ano}-${mes}-${data}`;
 }
 
 
@@ -103,16 +146,21 @@ function normalizarHora(valor) {
     return "";
   }
 
-  const texto = String(valor);
+  const texto =
+    String(valor);
 
   const encontrado =
-    texto.match(/(\d{2}):(\d{2})/);
+    texto.match(
+      /(\d{2}):(\d{2})/
+    );
 
   if (!encontrado) {
     return texto;
   }
 
-  return `${encontrado[1]}:${encontrado[2]}`;
+  return (
+    `${encontrado[1]}:${encontrado[2]}`
+  );
 }
 
 
@@ -120,7 +168,9 @@ function normalizarHora(valor) {
 // MOSTRAR HORÁRIOS DISPONÍVEIS
 // =====================================================
 
-function mostrarHorarios(ocupados = []) {
+function mostrarHorarios(
+  ocupados = []
+) {
 
   if (!horario) {
     return;
@@ -133,60 +183,95 @@ function mostrarHorarios(ocupados = []) {
     '<option value="">Selecione um horário</option>';
 
   let quantidadeLivres = 0;
-  let horarioAindaDisponivel = false;
 
-  horariosDisponiveis.forEach((hora) => {
+  let horarioAindaDisponivel =
+    false;
 
-    const ocupado =
-      ocupados.some((evento) => {
 
-        if (!evento) {
-          return false;
+  horariosDisponiveis.forEach(
+    (hora) => {
+
+      const ocupado =
+        ocupados.some(
+          (evento) => {
+
+            if (!evento) {
+              return false;
+            }
+
+            const inicio =
+              normalizarHora(
+                evento.inicio
+              );
+
+            const fim =
+              normalizarHora(
+                evento.fim
+              );
+
+            if (!inicio) {
+              return false;
+            }
+
+            if (fim) {
+
+              return (
+                hora >= inicio &&
+                hora < fim
+              );
+            }
+
+            return (
+              hora === inicio
+            );
+          }
+        );
+
+
+      if (!ocupado) {
+
+        const opcao =
+          document.createElement(
+            "option"
+          );
+
+        opcao.value =
+          hora;
+
+        opcao.textContent =
+          hora;
+
+
+        if (
+          hora ===
+          horarioSelecionado
+        ) {
+
+          opcao.selected =
+            true;
+
+          horarioAindaDisponivel =
+            true;
         }
 
-        const inicio =
-          normalizarHora(evento.inicio);
 
-        const fim =
-          normalizarHora(evento.fim);
+        horario.appendChild(
+          opcao
+        );
 
-        if (!inicio) {
-          return false;
-        }
-
-        if (fim) {
-          return hora >= inicio && hora < fim;
-        }
-
-        return hora === inicio;
-      });
-
-
-    if (!ocupado) {
-
-      const opcao =
-        document.createElement("option");
-
-      opcao.value = hora;
-      opcao.textContent = hora;
-
-      if (hora === horarioSelecionado) {
-
-        opcao.selected = true;
-
-        horarioAindaDisponivel = true;
+        quantidadeLivres++;
       }
-
-      horario.appendChild(opcao);
-
-      quantidadeLivres++;
     }
-  });
+  );
 
 
-  if (quantidadeLivres > 0) {
+  if (
+    quantidadeLivres > 0
+  ) {
 
-    horario.disabled = false;
+    horario.disabled =
+      false;
+
 
     if (
       horarioSelecionado &&
@@ -202,7 +287,8 @@ function mostrarHorarios(ocupados = []) {
     horario.innerHTML =
       '<option value="">Nenhum horário disponível</option>';
 
-    horario.disabled = true;
+    horario.disabled =
+      true;
   }
 }
 
@@ -211,34 +297,56 @@ function mostrarHorarios(ocupados = []) {
 // CONSULTAR GOOGLE AGENDA
 // =====================================================
 
-async function consultarAgenda(dataSelecionada) {
+async function consultarAgenda(
+  dataSelecionada
+) {
 
-  const controlador =
-    new AbortController();
-
-  const limite =
-    setTimeout(() => {
-
-      controlador.abort();
-
-    }, 4000);
+  let controlador = null;
+  let limite = null;
 
 
   try {
+
+    if (
+      typeof AbortController !==
+      "undefined"
+    ) {
+
+      controlador =
+        new AbortController();
+
+      limite =
+        setTimeout(
+          () => {
+            controlador.abort();
+          },
+          4000
+        );
+    }
+
 
     const url =
       `${AGENDA_API_URL}?data=${encodeURIComponent(dataSelecionada)}&t=${Date.now()}`;
 
 
+    const configuracao = {
+      method: "GET",
+      cache: "no-store",
+      redirect: "follow"
+    };
+
+
+    if (controlador) {
+
+      configuracao.signal =
+        controlador.signal;
+    }
+
+
     const resposta =
       await fetch(
         url,
-        {
-          method: "GET",
-          cache: "no-store",
-          redirect: "follow",
-          signal: controlador.signal
-        }
+        configuracao
       );
 
 
@@ -252,6 +360,7 @@ async function consultarAgenda(dataSelecionada) {
 
     const texto =
       await resposta.text();
+
 
     let dados;
 
@@ -283,14 +392,18 @@ async function consultarAgenda(dataSelecionada) {
 
     if (
       dados &&
-      Array.isArray(dados.ocupados)
+      Array.isArray(
+        dados.ocupados
+      )
     ) {
 
       return dados.ocupados;
     }
 
 
-    if (Array.isArray(dados)) {
+    if (
+      Array.isArray(dados)
+    ) {
 
       return dados;
     }
@@ -301,7 +414,12 @@ async function consultarAgenda(dataSelecionada) {
 
   } finally {
 
-    clearTimeout(limite);
+    if (limite) {
+
+      clearTimeout(
+        limite
+      );
+    }
   }
 }
 
@@ -310,9 +428,13 @@ async function consultarAgenda(dataSelecionada) {
 // ESCOLHA DA DATA
 // =====================================================
 
-if (dia && horario) {
+if (
+  dia &&
+  horario
+) {
 
-  horario.disabled = true;
+  horario.disabled =
+    true;
 
   horario.innerHTML =
     '<option value="">Escolha uma data</option>';
@@ -327,13 +449,12 @@ if (dia && horario) {
         horario.innerHTML =
           '<option value="">Escolha uma data</option>';
 
-        horario.disabled = true;
+        horario.disabled =
+          true;
 
         return;
       }
 
-
-      // LIBERA OS HORÁRIOS IMEDIATAMENTE
 
       horario.innerHTML =
         '<option value="">Selecione um horário</option>';
@@ -343,21 +464,26 @@ if (dia && horario) {
         (hora) => {
 
           const opcao =
-            document.createElement("option");
+            document.createElement(
+              "option"
+            );
 
-          opcao.value = hora;
+          opcao.value =
+            hora;
 
-          opcao.textContent = hora;
+          opcao.textContent =
+            hora;
 
-          horario.appendChild(opcao);
+          horario.appendChild(
+            opcao
+          );
         }
       );
 
 
-      horario.disabled = false;
+      horario.disabled =
+        false;
 
-
-      // CONSULTA O GOOGLE AGENDA
 
       try {
 
@@ -368,62 +494,76 @@ if (dia && horario) {
 
 
         horario
-          .querySelectorAll("option")
-          .forEach((opcao) => {
+          .querySelectorAll(
+            "option"
+          )
+          .forEach(
+            (opcao) => {
 
-            if (!opcao.value) {
-              return;
+              if (
+                !opcao.value
+              ) {
+                return;
+              }
+
+
+              const hora =
+                opcao.value;
+
+
+              const estaOcupado =
+                ocupados.some(
+                  (evento) => {
+
+                    if (!evento) {
+                      return false;
+                    }
+
+
+                    const inicio =
+                      normalizarHora(
+                        evento.inicio
+                      );
+
+                    const fim =
+                      normalizarHora(
+                        evento.fim
+                      );
+
+
+                    if (!inicio) {
+                      return false;
+                    }
+
+
+                    if (fim) {
+
+                      return (
+                        hora >= inicio &&
+                        hora < fim
+                      );
+                    }
+
+
+                    return (
+                      hora === inicio
+                    );
+                  }
+                );
+
+
+              if (
+                estaOcupado
+              ) {
+
+                opcao.disabled =
+                  true;
+
+                opcao.textContent =
+                  `${hora} — indisponível`;
+              }
             }
-
-
-            const hora =
-              opcao.value;
-
-
-            const estaOcupado =
-              ocupados.some((evento) => {
-
-                if (!evento) {
-                  return false;
-                }
-
-                const inicio =
-                  normalizarHora(
-                    evento.inicio
-                  );
-
-                const fim =
-                  normalizarHora(
-                    evento.fim
-                  );
-
-
-                if (!inicio) {
-                  return false;
-                }
-
-
-                if (fim) {
-
-                  return (
-                    hora >= inicio &&
-                    hora < fim
-                  );
-                }
-
-
-                return hora === inicio;
-              });
-
-
-            if (estaOcupado) {
-
-              opcao.disabled = true;
-
-              opcao.textContent =
-                `${hora} — indisponível`;
-            }
-          });
+          );
 
 
         const selecionado =
@@ -437,7 +577,8 @@ if (dia && horario) {
           selecionado.disabled
         ) {
 
-          horario.value = "";
+          horario.value =
+            "";
 
           alert(
             "Esse horário acabou de ficar indisponível. Escolha outro horário."
@@ -483,7 +624,10 @@ function obterValorConsulta(
 
   return Number(
     correspondencia[1]
-      .replace(",", ".")
+      .replace(
+        ",",
+        "."
+      )
   );
 }
 
@@ -503,7 +647,10 @@ function calcularTotal(
     );
 
 
-  if (valorConsulta === null) {
+  if (
+    valorConsulta === null
+  ) {
+
     return null;
   }
 
@@ -516,7 +663,9 @@ function calcularTotal(
     modalidadeSelecionada &&
     modalidadeSelecionada
       .toLowerCase()
-      .includes("casa do cliente")
+      .includes(
+        "casa do cliente"
+      )
   ) {
 
     total += 10;
@@ -531,11 +680,16 @@ function calcularTotal(
 // FORMATAR DINHEIRO
 // =====================================================
 
-function formatarDinheiro(valor) {
+function formatarDinheiro(
+  valor
+) {
 
   return Number(valor)
     .toFixed(2)
-    .replace(".", ",");
+    .replace(
+      ".",
+      ","
+    );
 }
 
 
@@ -552,17 +706,30 @@ function invalidarPagamento() {
 
 
   if (caixaPix) {
+
     caixaPix.remove();
   }
 
 
-  localStorage.removeItem(
-    "ultimoAgendamento"
-  );
+  try {
+
+    localStorage.removeItem(
+      "ultimoAgendamento"
+    );
+
+  } catch (erro) {
+
+    console.warn(
+      "LocalStorage indisponível:",
+      erro
+    );
+  }
 
 
   if (pagamento) {
-    pagamento.value = "";
+
+    pagamento.value =
+      "";
   }
 }
 
@@ -603,16 +770,27 @@ if (modalidade) {
 // PIX — CAMPO EMV
 // =====================================================
 
-function campoPix(id, valor) {
+function campoPix(
+  id,
+  valor
+) {
 
   const texto =
     String(valor);
 
   const tamanho =
-    String(texto.length)
-      .padStart(2, "0");
+    String(
+      texto.length
+    ).padStart(
+      2,
+      "0"
+    );
 
-  return id + tamanho + texto;
+  return (
+    id +
+    tamanho +
+    texto
+  );
 }
 
 
@@ -620,7 +798,9 @@ function campoPix(id, valor) {
 // PIX — CRC16
 // =====================================================
 
-function crc16(payload) {
+function crc16(
+  payload
+) {
 
   let resultado =
     0xFFFF;
@@ -633,7 +813,8 @@ function crc16(payload) {
   ) {
 
     resultado ^=
-      payload.charCodeAt(i) << 8;
+      payload.charCodeAt(i)
+      << 8;
 
 
     for (
@@ -643,7 +824,8 @@ function crc16(payload) {
     ) {
 
       if (
-        (resultado & 0x8000) !== 0
+        (resultado & 0x8000) !==
+        0
       ) {
 
         resultado =
@@ -666,7 +848,10 @@ function crc16(payload) {
   return resultado
     .toString(16)
     .toUpperCase()
-    .padStart(4, "0");
+    .padStart(
+      4,
+      "0"
+    );
 }
 
 
@@ -674,7 +859,9 @@ function crc16(payload) {
 // GERAR PIX COPIA E COLA
 // =====================================================
 
-function gerarPixCopiaECola(valor) {
+function gerarPixCopiaECola(
+  valor
+) {
 
   const gui =
     campoPix(
@@ -702,7 +889,8 @@ function gerarPixCopiaECola(valor) {
       .toFixed(2);
 
 
-  let payload = "";
+  let payload =
+    "";
 
 
   payload +=
@@ -772,8 +960,10 @@ function gerarPixCopiaECola(valor) {
     "6304";
 
 
-  return payload +
-    crc16(payload);
+  return (
+    payload +
+    crc16(payload)
+  );
 }
 
 
@@ -789,7 +979,8 @@ function montarMensagem(
 ) {
 
   const temDeslocamento =
-    total > valorConsulta;
+    total >
+    valorConsulta;
 
 
   return [
@@ -836,24 +1027,28 @@ function montarMensagem(
 
 // =====================================================
 // ABRIR WHATSAPP
+// CORREÇÃO SAFARI / IPHONE
 // =====================================================
 
-function abrirWhatsapp(mensagem) {
+function abrirWhatsapp(
+  mensagem
+) {
 
   const url =
     `https://wa.me/${WHATSAPP_ESTRELA_GUIA}?text=${encodeURIComponent(mensagem)}`;
 
 
-  window.open(
-    url,
-    "_blank",
-    "noopener,noreferrer"
+  // Navegação direta é mais confiável
+  // no Safari do iPhone do que window.open.
+
+  window.location.assign(
+    url
   );
 }
 
 
 // =====================================================
-// MOSTRAR PIX + QR CODE NA TELA
+// MOSTRAR PIX + QR CODE
 // =====================================================
 
 function mostrarPagamentoPix(
@@ -870,12 +1065,15 @@ function mostrarPagamentoPix(
 
 
   if (anterior) {
+
     anterior.remove();
   }
 
 
   const caixa =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
 
 
   caixa.id =
@@ -906,8 +1104,9 @@ function mostrarPagamentoPix(
   // ===================================================
 
   const titulo =
-    document.createElement("h3");
-
+    document.createElement(
+      "h3"
+    );
 
   titulo.textContent =
     "Pagamento via Pix";
@@ -918,15 +1117,15 @@ function mostrarPagamentoPix(
   // ===================================================
 
   const valor =
-    document.createElement("p");
-
+    document.createElement(
+      "p"
+    );
 
   valor.style.fontSize =
     "26px";
 
   valor.style.fontWeight =
     "bold";
-
 
   valor.textContent =
     `R$ ${formatarDinheiro(total)}`;
@@ -937,20 +1136,22 @@ function mostrarPagamentoPix(
   // ===================================================
 
   const resumo =
-    document.createElement("p");
-
+    document.createElement(
+      "p"
+    );
 
   resumo.textContent =
     `${dados.servico} — ${dados.modalidade}`;
 
 
   // ===================================================
-  // INSTRUÇÃO QR CODE
+  // INSTRUÇÃO QR
   // ===================================================
 
   const instrucaoQR =
-    document.createElement("p");
-
+    document.createElement(
+      "p"
+    );
 
   instrucaoQR.style.marginTop =
     "22px";
@@ -958,22 +1159,21 @@ function mostrarPagamentoPix(
   instrucaoQR.style.fontWeight =
     "600";
 
-
   instrucaoQR.textContent =
     "Escaneie o QR Code com o aplicativo do seu banco";
 
 
   // ===================================================
-  // ÁREA DO QR CODE
+  // ÁREA QR CODE
   // ===================================================
 
   const areaQR =
-    document.createElement("div");
-
+    document.createElement(
+      "div"
+    );
 
   areaQR.id =
     "qrcode-pix";
-
 
   areaQR.style.width =
     "230px";
@@ -1004,19 +1204,19 @@ function mostrarPagamentoPix(
 
 
   // ===================================================
-  // AVISO CASO QR CODE FALHE
+  // AVISO QR
   // ===================================================
 
   const avisoQR =
-    document.createElement("p");
-
+    document.createElement(
+      "p"
+    );
 
   avisoQR.style.display =
     "none";
 
   avisoQR.style.margin =
     "18px 0";
-
 
   avisoQR.textContent =
     "Não foi possível carregar o QR Code. Use o Pix Copia e Cola abaixo.";
@@ -1027,12 +1227,12 @@ function mostrarPagamentoPix(
   // ===================================================
 
   const instrucao =
-    document.createElement("p");
-
+    document.createElement(
+      "p"
+    );
 
   instrucao.style.marginTop =
     "20px";
-
 
   instrucao.textContent =
     "Ou copie o código Pix abaixo e faça o pagamento no aplicativo do seu banco.";
@@ -1043,20 +1243,18 @@ function mostrarPagamentoPix(
   // ===================================================
 
   const codigo =
-    document.createElement("textarea");
-
+    document.createElement(
+      "textarea"
+    );
 
   codigo.value =
     codigoPix;
 
-
   codigo.readOnly =
     true;
 
-
   codigo.rows =
     5;
-
 
   codigo.style.width =
     "100%";
@@ -1076,20 +1274,18 @@ function mostrarPagamentoPix(
   // ===================================================
 
   const botaoCopiar =
-    document.createElement("button");
-
+    document.createElement(
+      "button"
+    );
 
   botaoCopiar.type =
     "button";
 
-
   botaoCopiar.className =
     "botao botao-dourado";
 
-
   botaoCopiar.style.marginTop =
     "12px";
-
 
   botaoCopiar.textContent =
     "Copiar código Pix";
@@ -1097,32 +1293,64 @@ function mostrarPagamentoPix(
 
   botaoCopiar.addEventListener(
     "click",
-    async () => {
+    async (evento) => {
+
+      evento.preventDefault();
+
+      evento.stopPropagation();
+
 
       try {
 
-        await navigator.clipboard
-          .writeText(
-            codigoPix
-          );
+        if (
+          navigator.clipboard &&
+          navigator.clipboard.writeText
+        ) {
+
+          await navigator.clipboard
+            .writeText(
+              codigoPix
+            );
 
 
-        botaoCopiar.textContent =
-          "✓ Código Pix copiado";
+          botaoCopiar.textContent =
+            "✓ Código Pix copiado";
+
+          return;
+        }
 
 
-      } catch {
+        throw new Error(
+          "Clipboard API indisponível"
+        );
+
+
+      } catch (erro) {
 
         codigo.focus();
 
         codigo.select();
 
+        codigo.setSelectionRange(
+          0,
+          codigo.value.length
+        );
+
 
         try {
 
-          document.execCommand(
-            "copy"
-          );
+          const copiado =
+            document.execCommand(
+              "copy"
+            );
+
+
+          if (!copiado) {
+
+            throw new Error(
+              "Falha ao copiar"
+            );
+          }
 
 
           botaoCopiar.textContent =
@@ -1145,12 +1373,12 @@ function mostrarPagamentoPix(
   // ===================================================
 
   const aviso =
-    document.createElement("p");
-
+    document.createElement(
+      "p"
+    );
 
   aviso.style.marginTop =
     "20px";
-
 
   aviso.textContent =
     "Depois do pagamento, clique abaixo para enviar o comprovante pelo WhatsApp.";
@@ -1161,20 +1389,18 @@ function mostrarPagamentoPix(
   // ===================================================
 
   const botaoWhatsapp =
-    document.createElement("button");
-
+    document.createElement(
+      "button"
+    );
 
   botaoWhatsapp.type =
     "button";
 
-
   botaoWhatsapp.className =
     "botao botao-dourado";
 
-
   botaoWhatsapp.style.marginTop =
     "10px";
-
 
   botaoWhatsapp.textContent =
     "Já paguei — enviar comprovante";
@@ -1182,7 +1408,12 @@ function mostrarPagamentoPix(
 
   botaoWhatsapp.addEventListener(
     "click",
-    () => {
+    (evento) => {
+
+      evento.preventDefault();
+
+      evento.stopPropagation();
+
 
       if (
         servico.value !==
@@ -1193,7 +1424,8 @@ function mostrarPagamentoPix(
 
         caixa.remove();
 
-        pagamento.value = "";
+        pagamento.value =
+          "";
 
 
         alert(
@@ -1213,12 +1445,14 @@ function mostrarPagamentoPix(
 
 
       if (
-        totalAtual !== total
+        totalAtual !==
+        total
       ) {
 
         caixa.remove();
 
-        pagamento.value = "";
+        pagamento.value =
+          "";
 
 
         alert(
@@ -1255,7 +1489,7 @@ function mostrarPagamentoPix(
 
 
   // ===================================================
-  // PRIMEIRO COLOCA A CAIXA NA PÁGINA
+  // INSERE A CAIXA
   // ===================================================
 
   caixa.appendChild(
@@ -1309,7 +1543,7 @@ function mostrarPagamentoPix(
 
 
   // ===================================================
-  // AGORA GERA O QR CODE
+  // GERA QR CODE
   // ===================================================
 
   try {
@@ -1325,15 +1559,22 @@ function mostrarPagamentoPix(
     }
 
 
-    areaQR.innerHTML = "";
+    areaQR.innerHTML =
+      "";
 
 
     new QRCode(
       areaQR,
       {
-        text: codigoPix,
-        width: 210,
-        height: 210,
+        text:
+          codigoPix,
+
+        width:
+          210,
+
+        height:
+          210,
+
         correctLevel:
           QRCode.CorrectLevel.M
       }
@@ -1357,328 +1598,408 @@ function mostrarPagamentoPix(
   }
 
 
-  caixa.scrollIntoView(
-    {
-      behavior: "smooth",
-      block: "center"
-    }
+  // ===================================================
+  // IMPORTANTE:
+  // NÃO USAMOS scrollIntoView AQUI.
+  // Isso evita o salto estranho do Safari/iPhone.
+  // ===================================================
+
+  setTimeout(
+    () => {
+
+      try {
+
+        const posicao =
+          caixa.getBoundingClientRect().top +
+          window.pageYOffset -
+          100;
+
+
+        window.scrollTo(
+          0,
+          Math.max(
+            0,
+            posicao
+          )
+        );
+
+      } catch (erro) {
+
+        console.warn(
+          "Não foi possível posicionar a tela no Pix:",
+          erro
+        );
+      }
+
+    },
+    100
   );
 }
 
 
 // =====================================================
-// ENVIO DO FORMULÁRIO — ÚNICO
+// PROCESSAR FORMULÁRIO
+// =====================================================
+
+function processarAgendamento(
+  evento
+) {
+
+  if (evento) {
+
+    evento.preventDefault();
+
+    evento.stopPropagation();
+
+    if (
+      typeof evento.stopImmediatePropagation ===
+      "function"
+    ) {
+
+      evento.stopImmediatePropagation();
+    }
+  }
+
+
+  const dados = {
+
+    nome:
+      nome
+        ? nome.value.trim()
+        : "",
+
+    whatsapp:
+      whatsapp
+        ? whatsapp.value.trim()
+        : "",
+
+    servico:
+      servico
+        ? servico.value
+        : "",
+
+    modalidade:
+      modalidade
+        ? modalidade.value
+        : "",
+
+    dia:
+      dia
+        ? dia.value
+        : "",
+
+    horario:
+      horario
+        ? horario.value
+        : "",
+
+    pagamento:
+      pagamento
+        ? pagamento.value
+        : ""
+  };
+
+
+  // ===================================================
+  // CAMPOS OBRIGATÓRIOS
+  // ===================================================
+
+  if (
+    !dados.nome ||
+    !dados.whatsapp ||
+    !dados.servico ||
+    !dados.modalidade ||
+    !dados.dia ||
+    !dados.horario ||
+    !dados.pagamento
+  ) {
+
+    alert(
+      "Preencha todos os dados do agendamento."
+    );
+
+    return false;
+  }
+
+
+  // ===================================================
+  // OUTRA CIDADE
+  // ===================================================
+
+  if (
+    dados.modalidade
+      .toLowerCase()
+      .includes(
+        "outra cidade"
+      )
+  ) {
+
+    const mensagemOutraCidade = [
+
+      "✨ CONSULTA DE DISPONIBILIDADE — ESTRELA GUIA TAROT",
+
+      "",
+
+      `Nome: ${dados.nome}`,
+
+      `WhatsApp: ${dados.whatsapp}`,
+
+      `Consulta: ${dados.servico}`,
+
+      `Modalidade: ${dados.modalidade}`,
+
+      `Data pretendida: ${dados.dia}`,
+
+      `Horário pretendido: ${dados.horario}`,
+
+      "",
+
+      "🚗 ATENDIMENTO EM OUTRA CIDADE",
+
+      "",
+
+      "Gostaria de consultar a disponibilidade e o valor do deslocamento.",
+
+      "",
+
+      "O valor total e a forma de pagamento serão confirmados após combinar o deslocamento."
+
+    ].join("\n");
+
+
+    abrirWhatsapp(
+      mensagemOutraCidade
+    );
+
+
+    return false;
+  }
+
+
+  // ===================================================
+  // DINHEIRO
+  // ===================================================
+
+  const pagamentoEmDinheiro =
+    dados.pagamento
+      .toLowerCase()
+      .includes(
+        "dinheiro"
+      );
+
+
+  const atendimentoOnline =
+    dados.modalidade
+      .toLowerCase()
+      .includes(
+        "online"
+      );
+
+
+  if (
+    pagamentoEmDinheiro &&
+    atendimentoOnline
+  ) {
+
+    alert(
+      "Pagamento em dinheiro está disponível somente para atendimentos presenciais. Escolha Pix ou cartão de crédito para atendimento online."
+    );
+
+
+    pagamento.value =
+      "";
+
+
+    return false;
+  }
+
+
+  // ===================================================
+  // VALORES
+  // ===================================================
+
+  const valorConsulta =
+    obterValorConsulta(
+      dados.servico
+    );
+
+
+  const total =
+    calcularTotal(
+      dados.servico,
+      dados.modalidade
+    );
+
+
+  if (
+    valorConsulta === null ||
+    total === null
+  ) {
+
+    alert(
+      "Não foi possível calcular o valor do atendimento."
+    );
+
+
+    return false;
+  }
+
+
+  // ===================================================
+  // DINHEIRO PRESENCIAL
+  // ===================================================
+
+  if (
+    pagamentoEmDinheiro
+  ) {
+
+    let mensagemDinheiro =
+      montarMensagem(
+        dados,
+        valorConsulta,
+        total,
+        "DINHEIRO FÍSICO — PAGAMENTO NO ATENDIMENTO"
+      );
+
+
+    mensagemDinheiro +=
+      "\n\n💵 Pagamento em dinheiro no momento do atendimento.";
+
+
+    abrirWhatsapp(
+      mensagemDinheiro
+    );
+
+
+    return false;
+  }
+
+
+  // ===================================================
+  // PIX
+  // ===================================================
+
+  if (
+    dados.pagamento
+      .toLowerCase()
+      .includes(
+        "pix"
+      )
+  ) {
+
+    const codigoPix =
+      gerarPixCopiaECola(
+        total
+      );
+
+
+    mostrarPagamentoPix(
+      codigoPix,
+      total,
+      dados,
+      valorConsulta
+    );
+
+
+    return false;
+  }
+
+
+  // ===================================================
+  // CARTÃO STONE
+  // SAFARI / IPHONE
+  // ===================================================
+
+  if (
+    dados.pagamento
+      .toLowerCase()
+      .includes(
+        "cart"
+      )
+  ) {
+
+    const linkPagamento =
+      linksStone[
+        total
+      ];
+
+
+    if (
+      !linkPagamento
+    ) {
+
+      alert(
+        `Não existe link Stone configurado para R$ ${formatarDinheiro(total)}.`
+      );
+
+
+      return false;
+    }
+
+
+    try {
+
+      localStorage.setItem(
+        "ultimoAgendamento",
+        JSON.stringify(
+          {
+            ...dados,
+            valorConsulta,
+            total
+          }
+        )
+      );
+
+    } catch (erro) {
+
+      console.warn(
+        "Não foi possível salvar o agendamento no navegador:",
+        erro
+      );
+    }
+
+
+    // Navegação direta.
+    // Mais confiável no Safari/iOS.
+
+    window.location.assign(
+      linkPagamento
+    );
+
+
+    return false;
+  }
+
+
+  alert(
+    "Escolha Pix, cartão de crédito ou dinheiro físico."
+  );
+
+
+  return false;
+}
+
+
+// =====================================================
+// ENVIO DO FORMULÁRIO
 // =====================================================
 
 if (formulario) {
 
   formulario.addEventListener(
     "submit",
-    (evento) => {
-
-      evento.preventDefault();
-
-
-      const dados = {
-
-        nome:
-          nome
-            ? nome.value.trim()
-            : "",
-
-        whatsapp:
-          whatsapp
-            ? whatsapp.value.trim()
-            : "",
-
-        servico:
-          servico
-            ? servico.value
-            : "",
-
-        modalidade:
-          modalidade
-            ? modalidade.value
-            : "",
-
-        dia:
-          dia
-            ? dia.value
-            : "",
-
-        horario:
-          horario
-            ? horario.value
-            : "",
-
-        pagamento:
-          pagamento
-            ? pagamento.value
-            : ""
-      };
-
-
-      // =================================================
-      // CAMPOS OBRIGATÓRIOS
-      // =================================================
-
-      if (
-        !dados.nome ||
-        !dados.whatsapp ||
-        !dados.servico ||
-        !dados.modalidade ||
-        !dados.dia ||
-        !dados.horario ||
-        !dados.pagamento
-      ) {
-
-        alert(
-          "Preencha todos os dados do agendamento."
-        );
-
-        return;
-      }
-
-
-      // =================================================
-      // OUTRAS CIDADES
-      // =================================================
-
-      if (
-        dados.modalidade
-          .toLowerCase()
-          .includes(
-            "outra cidade"
-          )
-      ) {
-
-        const mensagemOutraCidade = [
-
-          "✨ CONSULTA DE DISPONIBILIDADE — ESTRELA GUIA TAROT",
-
-          "",
-
-          `Nome: ${dados.nome}`,
-
-          `WhatsApp: ${dados.whatsapp}`,
-
-          `Consulta: ${dados.servico}`,
-
-          `Modalidade: ${dados.modalidade}`,
-
-          `Data pretendida: ${dados.dia}`,
-
-          `Horário pretendido: ${dados.horario}`,
-
-          "",
-
-          "🚗 ATENDIMENTO EM OUTRA CIDADE",
-
-          "",
-
-          "Gostaria de consultar a disponibilidade e o valor do deslocamento.",
-
-          "",
-
-          "O valor total e a forma de pagamento serão confirmados após combinar o deslocamento."
-
-        ].join("\n");
-
-
-        abrirWhatsapp(
-          mensagemOutraCidade
-        );
-
-
-        return;
-      }
-
-
-      // =================================================
-      // DINHEIRO FÍSICO
-      // =================================================
-
-      const pagamentoEmDinheiro =
-        dados.pagamento
-          .toLowerCase()
-          .includes(
-            "dinheiro"
-          );
-
-
-      const atendimentoOnline =
-        dados.modalidade
-          .toLowerCase()
-          .includes(
-            "online"
-          );
-
-
-      if (
-        pagamentoEmDinheiro &&
-        atendimentoOnline
-      ) {
-
-        alert(
-          "Pagamento em dinheiro está disponível somente para atendimentos presenciais. Escolha Pix ou cartão de crédito para atendimento online."
-        );
-
-
-        pagamento.value =
-          "";
-
-
-        return;
-      }
-
-
-      // =================================================
-      // RECALCULAR VALOR
-      // =================================================
-
-      const valorConsulta =
-        obterValorConsulta(
-          dados.servico
-        );
-
-
-      const total =
-        calcularTotal(
-          dados.servico,
-          dados.modalidade
-        );
-
-
-      if (
-        valorConsulta === null ||
-        total === null
-      ) {
-
-        alert(
-          "Não foi possível calcular o valor do atendimento."
-        );
-
-
-        return;
-      }
-
-
-      // =================================================
-      // DINHEIRO — PRESENCIAL
-      // =================================================
-
-      if (
-        pagamentoEmDinheiro
-      ) {
-
-        let mensagemDinheiro =
-          montarMensagem(
-            dados,
-            valorConsulta,
-            total,
-            "DINHEIRO FÍSICO — PAGAMENTO NO ATENDIMENTO"
-          );
-
-
-        mensagemDinheiro +=
-          "\n\n💵 Pagamento em dinheiro no momento do atendimento.";
-
-
-        abrirWhatsapp(
-          mensagemDinheiro
-        );
-
-
-        return;
-      }
-
-
-      // =================================================
-      // PIX
-      // =================================================
-
-      if (
-        dados.pagamento
-          .toLowerCase()
-          .includes(
-            "pix"
-          )
-      ) {
-
-        const codigoPix =
-          gerarPixCopiaECola(
-            total
-          );
-
-
-        mostrarPagamentoPix(
-          codigoPix,
-          total,
-          dados,
-          valorConsulta
-        );
-
-
-        return;
-      }
-
-
-      // =================================================
-      // CARTÃO STONE
-      // =================================================
-
-      if (
-        dados.pagamento
-          .toLowerCase()
-          .includes(
-            "cart"
-          )
-      ) {
-
-        const linkPagamento =
-          linksStone[
-            total
-          ];
-
-
-        if (
-          !linkPagamento
-        ) {
-
-          alert(
-            `Não existe link Stone configurado para R$ ${formatarDinheiro(total)}.`
-          );
-
-
-          return;
-        }
-
-
-        localStorage.setItem(
-          "ultimoAgendamento",
-          JSON.stringify(
-            {
-              ...dados,
-              valorConsulta,
-              total
-            }
-          )
-        );
-
-
-        window.location.href =
-          linkPagamento;
-
-
-        return;
-      }
-
-
-      alert(
-        "Escolha Pix, cartão de crédito ou dinheiro físico."
-      );
-    }
+    processarAgendamento,
+    false
   );
+
+
+  formulario.onsubmit =
+    function(evento) {
+
+      return processarAgendamento(
+        evento
+      );
+    };
 }
 
 
@@ -1794,7 +2115,6 @@ if (
 
         await musica.play();
 
-
         tocando =
           true;
 
@@ -1803,7 +2123,6 @@ if (
 
         tocando =
           false;
-
 
         botaoMusica.textContent =
           "♪ Música";
@@ -1823,16 +2142,16 @@ const botaoInstagram =
   );
 
 
-if (botaoInstagram) {
+if (
+  botaoInstagram
+) {
 
   botaoInstagram.addEventListener(
     "click",
     () => {
 
-      window.open(
-        "https://www.instagram.com/suaestrelaguiatarot",
-        "_blank",
-        "noopener,noreferrer"
+      window.location.assign(
+        "https://www.instagram.com/suaestrelaguiatarot"
       );
     }
   );
@@ -1850,12 +2169,16 @@ const botaoTema =
 
 
 const temaSistema =
-  window.matchMedia(
-    "(prefers-color-scheme: dark)"
-  );
+  window.matchMedia
+    ? window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      )
+    : null;
 
 
-function aplicarTema(noturno) {
+function aplicarTema(
+  noturno
+) {
 
   document.body.classList.toggle(
     "modo-noturno",
@@ -1873,10 +2196,28 @@ function aplicarTema(noturno) {
 }
 
 
-const temaSalvo =
-  localStorage.getItem(
-    "tema"
+// =====================================================
+// CARREGAR TEMA
+// =====================================================
+
+let temaSalvo =
+  null;
+
+
+try {
+
+  temaSalvo =
+    localStorage.getItem(
+      "tema"
+    );
+
+} catch (erro) {
+
+  console.warn(
+    "LocalStorage indisponível:",
+    erro
   );
+}
 
 
 if (
@@ -1902,28 +2243,75 @@ if (
 } else {
 
   aplicarTema(
-    temaSistema.matches
+    temaSistema
+      ? temaSistema.matches
+      : false
   );
 }
 
 
-temaSistema.addEventListener(
-  "change",
-  (evento) => {
+// =====================================================
+// ALTERAÇÃO AUTOMÁTICA DO TEMA
+// COMPATIBILIDADE SAFARI
+// =====================================================
 
-    if (
-      !localStorage.getItem(
-        "tema"
-      )
-    ) {
+if (temaSistema) {
 
-      aplicarTema(
-        evento.matches
-      );
-    }
+  const atualizarTemaSistema =
+    (evento) => {
+
+      let salvo =
+        null;
+
+
+      try {
+
+        salvo =
+          localStorage.getItem(
+            "tema"
+          );
+
+      } catch {
+        salvo = null;
+      }
+
+
+      if (!salvo) {
+
+        aplicarTema(
+          evento.matches
+        );
+      }
+    };
+
+
+  if (
+    typeof temaSistema.addEventListener ===
+    "function"
+  ) {
+
+    temaSistema.addEventListener(
+      "change",
+      atualizarTemaSistema
+    );
+
+  } else if (
+    typeof temaSistema.addListener ===
+    "function"
+  ) {
+
+    // Safari antigo
+
+    temaSistema.addListener(
+      atualizarTemaSistema
+    );
   }
-);
+}
 
+
+// =====================================================
+// BOTÃO DO TEMA
+// =====================================================
 
 if (botaoTema) {
 
@@ -1948,12 +2336,22 @@ if (botaoTema) {
       );
 
 
-      localStorage.setItem(
-        "tema",
-        novoTemaNoturno
-          ? "noturno"
-          : "claro"
-      );
+      try {
+
+        localStorage.setItem(
+          "tema",
+          novoTemaNoturno
+            ? "noturno"
+            : "claro"
+        );
+
+      } catch (erro) {
+
+        console.warn(
+          "Não foi possível salvar o tema:",
+          erro
+        );
+      }
     }
   );
 }
@@ -2099,4 +2497,9 @@ if (
 
 
   atualizarMensagemData();
-    }
+}
+
+
+// =====================================================
+// FIM DO SCRIPT
+// =====================================================
