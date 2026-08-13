@@ -116,13 +116,18 @@ function normalizarHora(valor) {
 }
 
 
+// =====================================================
+// MOSTRAR HORÁRIOS DISPONÍVEIS
+// =====================================================
+
 function mostrarHorarios(ocupados = []) {
 
   if (!horario) {
     return;
   }
 
-  const horarioSelecionado = horario.value;
+  const horarioSelecionado =
+    horario.value;
 
   horario.innerHTML =
     '<option value="">Selecione um horário</option>';
@@ -166,7 +171,9 @@ function mostrarHorarios(ocupados = []) {
       opcao.textContent = hora;
 
       if (hora === horarioSelecionado) {
+
         opcao.selected = true;
+
         horarioAindaDisponivel = true;
       }
 
@@ -185,7 +192,9 @@ function mostrarHorarios(ocupados = []) {
       horarioSelecionado &&
       horarioAindaDisponivel
     ) {
-      horario.value = horarioSelecionado;
+
+      horario.value =
+        horarioSelecionado;
     }
 
   } else {
@@ -209,7 +218,9 @@ async function consultarAgenda(dataSelecionada) {
 
   const limite =
     setTimeout(() => {
+
       controlador.abort();
+
     }, 4000);
 
 
@@ -218,13 +229,17 @@ async function consultarAgenda(dataSelecionada) {
     const url =
       `${AGENDA_API_URL}?data=${encodeURIComponent(dataSelecionada)}&t=${Date.now()}`;
 
+
     const resposta =
-      await fetch(url, {
-        method: "GET",
-        cache: "no-store",
-        redirect: "follow",
-        signal: controlador.signal
-      });
+      await fetch(
+        url,
+        {
+          method: "GET",
+          cache: "no-store",
+          redirect: "follow",
+          signal: controlador.signal
+        }
+      );
 
 
     if (!resposta.ok) {
@@ -243,7 +258,8 @@ async function consultarAgenda(dataSelecionada) {
 
     try {
 
-      dados = JSON.parse(texto);
+      dados =
+        JSON.parse(texto);
 
     } catch {
 
@@ -253,10 +269,14 @@ async function consultarAgenda(dataSelecionada) {
     }
 
 
-    if (dados && dados.sucesso === false) {
+    if (
+      dados &&
+      dados.sucesso === false
+    ) {
 
       throw new Error(
-        dados.erro || "Erro retornado pela Agenda."
+        dados.erro ||
+        "Erro retornado pela Agenda."
       );
     }
 
@@ -297,131 +317,143 @@ if (dia && horario) {
   horario.innerHTML =
     '<option value="">Escolha uma data</option>';
 
-  dia.addEventListener("change", async () => {
 
-    if (!dia.value) {
+  dia.addEventListener(
+    "change",
+    async () => {
 
-      horario.innerHTML =
-        '<option value="">Escolha uma data</option>';
+      if (!dia.value) {
 
-      horario.disabled = true;
+        horario.innerHTML =
+          '<option value="">Escolha uma data</option>';
 
-      return;
-    }
+        horario.disabled = true;
 
-
-    // LIBERA OS HORÁRIOS IMEDIATAMENTE
-
-    horario.innerHTML =
-      '<option value="">Selecione um horário</option>';
-
-    horariosDisponiveis.forEach((hora) => {
-
-      const opcao =
-        document.createElement("option");
-
-      opcao.value = hora;
-      opcao.textContent = hora;
-
-      horario.appendChild(opcao);
-    });
-
-    horario.disabled = false;
-
-
-    // CONSULTA GOOGLE AGENDA EM SEGUNDO PLANO
-
-    try {
-
-      const ocupados =
-        await consultarAgenda(dia.value);
-
-
-      horario
-        .querySelectorAll("option")
-        .forEach((opcao) => {
-
-          if (!opcao.value) {
-            return;
-          }
-
-
-          const hora =
-            opcao.value;
-
-
-          const estaOcupado =
-            ocupados.some((evento) => {
-
-              if (!evento) {
-                return false;
-              }
-
-              const inicio =
-                normalizarHora(evento.inicio);
-
-              const fim =
-                normalizarHora(evento.fim);
-
-
-              if (!inicio) {
-                return false;
-              }
-
-
-              if (fim) {
-
-                return (
-                  hora >= inicio &&
-                  hora < fim
-                );
-              }
-
-
-              return hora === inicio;
-            });
-
-
-          if (estaOcupado) {
-
-            opcao.disabled = true;
-
-            opcao.textContent =
-              `${hora} — indisponível`;
-          }
-
-        });
-
-
-      const selecionado =
-        horario.options[
-          horario.selectedIndex
-        ];
-
-
-      if (
-        selecionado &&
-        selecionado.disabled
-      ) {
-
-        horario.value = "";
-
-        alert(
-          "Esse horário acabou de ficar indisponível. Escolha outro horário."
-        );
+        return;
       }
 
 
-    } catch (erro) {
+      // LIBERA OS HORÁRIOS IMEDIATAMENTE
 
-      console.warn(
-        "Não foi possível consultar o Google Agenda:",
-        erro
+      horario.innerHTML =
+        '<option value="">Selecione um horário</option>';
+
+
+      horariosDisponiveis.forEach(
+        (hora) => {
+
+          const opcao =
+            document.createElement("option");
+
+          opcao.value = hora;
+
+          opcao.textContent = hora;
+
+          horario.appendChild(opcao);
+        }
       );
 
-    }
 
-  });
+      horario.disabled = false;
+
+
+      // CONSULTA O GOOGLE AGENDA
+
+      try {
+
+        const ocupados =
+          await consultarAgenda(
+            dia.value
+          );
+
+
+        horario
+          .querySelectorAll("option")
+          .forEach((opcao) => {
+
+            if (!opcao.value) {
+              return;
+            }
+
+
+            const hora =
+              opcao.value;
+
+
+            const estaOcupado =
+              ocupados.some((evento) => {
+
+                if (!evento) {
+                  return false;
+                }
+
+                const inicio =
+                  normalizarHora(
+                    evento.inicio
+                  );
+
+                const fim =
+                  normalizarHora(
+                    evento.fim
+                  );
+
+
+                if (!inicio) {
+                  return false;
+                }
+
+
+                if (fim) {
+
+                  return (
+                    hora >= inicio &&
+                    hora < fim
+                  );
+                }
+
+
+                return hora === inicio;
+              });
+
+
+            if (estaOcupado) {
+
+              opcao.disabled = true;
+
+              opcao.textContent =
+                `${hora} — indisponível`;
+            }
+          });
+
+
+        const selecionado =
+          horario.options[
+            horario.selectedIndex
+          ];
+
+
+        if (
+          selecionado &&
+          selecionado.disabled
+        ) {
+
+          horario.value = "";
+
+          alert(
+            "Esse horário acabou de ficar indisponível. Escolha outro horário."
+          );
+        }
+
+
+      } catch (erro) {
+
+        console.warn(
+          "Não foi possível consultar o Google Agenda:",
+          erro
+        );
+      }
+    }
+  );
 }
 
 
@@ -429,20 +461,25 @@ if (dia && horario) {
 // DESCOBRIR VALOR DA CONSULTA
 // =====================================================
 
-function obterValorConsulta(textoServico) {
+function obterValorConsulta(
+  textoServico
+) {
 
   if (!textoServico) {
     return null;
   }
+
 
   const correspondencia =
     textoServico.match(
       /R\$\s*(\d+(?:[.,]\d{1,2})?)/i
     );
 
+
   if (!correspondencia) {
     return null;
   }
+
 
   return Number(
     correspondencia[1]
@@ -461,13 +498,18 @@ function calcularTotal(
 ) {
 
   const valorConsulta =
-    obterValorConsulta(servicoSelecionado);
+    obterValorConsulta(
+      servicoSelecionado
+    );
+
 
   if (valorConsulta === null) {
     return null;
   }
 
-  let total = valorConsulta;
+
+  let total =
+    valorConsulta;
 
 
   if (
@@ -508,6 +550,7 @@ function invalidarPagamento() {
       "pagamento-pix-gerado"
     );
 
+
   if (caixaPix) {
     caixaPix.remove();
   }
@@ -530,9 +573,13 @@ function invalidarPagamento() {
 
 if (servico) {
 
-  servico.addEventListener("change", () => {
-    invalidarPagamento();
-  });
+  servico.addEventListener(
+    "change",
+    () => {
+
+      invalidarPagamento();
+    }
+  );
 }
 
 
@@ -542,9 +589,13 @@ if (servico) {
 
 if (modalidade) {
 
-  modalidade.addEventListener("change", () => {
-    invalidarPagamento();
-  });
+  modalidade.addEventListener(
+    "change",
+    () => {
+
+      invalidarPagamento();
+    }
+  );
 }
 
 
@@ -554,7 +605,8 @@ if (modalidade) {
 
 function campoPix(id, valor) {
 
-  const texto = String(valor);
+  const texto =
+    String(valor);
 
   const tamanho =
     String(texto.length)
@@ -570,7 +622,9 @@ function campoPix(id, valor) {
 
 function crc16(payload) {
 
-  let resultado = 0xFFFF;
+  let resultado =
+    0xFFFF;
+
 
   for (
     let i = 0;
@@ -588,10 +642,13 @@ function crc16(payload) {
       j++
     ) {
 
-      if ((resultado & 0x8000) !== 0) {
+      if (
+        (resultado & 0x8000) !== 0
+      ) {
 
         resultado =
-          (resultado << 1) ^ 0x1021;
+          (resultado << 1) ^
+          0x1021;
 
       } else {
 
@@ -599,7 +656,9 @@ function crc16(payload) {
           resultado << 1;
       }
 
-      resultado &= 0xFFFF;
+
+      resultado &=
+        0xFFFF;
     }
   }
 
@@ -623,11 +682,13 @@ function gerarPixCopiaECola(valor) {
       "BR.GOV.BCB.PIX"
     );
 
+
   const chave =
     campoPix(
       "01",
       CHAVE_PIX
     );
+
 
   const contaPix =
     campoPix(
@@ -635,18 +696,53 @@ function gerarPixCopiaECola(valor) {
       gui + chave
     );
 
+
   const valorFormatado =
-    Number(valor).toFixed(2);
+    Number(valor)
+      .toFixed(2);
 
 
   let payload = "";
 
-  payload += campoPix("00", "01");
-  payload += contaPix;
-  payload += campoPix("52", "0000");
-  payload += campoPix("53", "986");
-  payload += campoPix("54", valorFormatado);
-  payload += campoPix("58", "BR");
+
+  payload +=
+    campoPix(
+      "00",
+      "01"
+    );
+
+
+  payload +=
+    contaPix;
+
+
+  payload +=
+    campoPix(
+      "52",
+      "0000"
+    );
+
+
+  payload +=
+    campoPix(
+      "53",
+      "986"
+    );
+
+
+  payload +=
+    campoPix(
+      "54",
+      valorFormatado
+    );
+
+
+  payload +=
+    campoPix(
+      "58",
+      "BR"
+    );
+
 
   payload +=
     campoPix(
@@ -654,21 +750,30 @@ function gerarPixCopiaECola(valor) {
       "ESTRELA GUIA TAROT"
     );
 
+
   payload +=
     campoPix(
       "60",
       "ALEGRETE"
     );
 
+
   payload +=
     campoPix(
       "62",
-      campoPix("05", "***")
+      campoPix(
+        "05",
+        "***"
+      )
     );
 
-  payload += "6304";
 
-  return payload + crc16(payload);
+  payload +=
+    "6304";
+
+
+  return payload +
+    crc16(payload);
 }
 
 
@@ -694,10 +799,15 @@ function montarMensagem(
     "",
 
     `Nome: ${dados.nome}`,
+
     `WhatsApp: ${dados.whatsapp}`,
+
     `Consulta: ${dados.servico}`,
+
     `Modalidade: ${dados.modalidade}`,
+
     `Data: ${dados.dia}`,
+
     `Horário: ${dados.horario}`,
 
     "",
@@ -733,6 +843,7 @@ function abrirWhatsapp(mensagem) {
   const url =
     `https://wa.me/${WHATSAPP_ESTRELA_GUIA}?text=${encodeURIComponent(mensagem)}`;
 
+
   window.open(
     url,
     "_blank",
@@ -757,6 +868,7 @@ function mostrarPagamentoPix(
       "pagamento-pix-gerado"
     );
 
+
   if (anterior) {
     anterior.remove();
   }
@@ -765,101 +877,219 @@ function mostrarPagamentoPix(
   const caixa =
     document.createElement("div");
 
+
   caixa.id =
     "pagamento-pix-gerado";
 
-  caixa.style.marginTop = "24px";
-  caixa.style.padding = "22px";
-  caixa.style.borderRadius = "14px";
-  caixa.style.background = "#ffffff";
-  caixa.style.color = "#222222";
-  caixa.style.textAlign = "center";
 
+  caixa.style.marginTop =
+    "24px";
+
+  caixa.style.padding =
+    "22px";
+
+  caixa.style.borderRadius =
+    "14px";
+
+  caixa.style.background =
+    "#ffffff";
+
+  caixa.style.color =
+    "#222222";
+
+  caixa.style.textAlign =
+    "center";
+
+
+  // ===================================================
+  // TÍTULO
+  // ===================================================
 
   const titulo =
     document.createElement("h3");
+
 
   titulo.textContent =
     "Pagamento via Pix";
 
 
+  // ===================================================
+  // VALOR
+  // ===================================================
+
   const valor =
     document.createElement("p");
 
-  valor.style.fontSize = "26px";
-  valor.style.fontWeight = "bold";
+
+  valor.style.fontSize =
+    "26px";
+
+  valor.style.fontWeight =
+    "bold";
+
 
   valor.textContent =
     `R$ ${formatarDinheiro(total)}`;
 
 
+  // ===================================================
+  // RESUMO
+  // ===================================================
+
   const resumo =
     document.createElement("p");
+
 
   resumo.textContent =
     `${dados.servico} — ${dados.modalidade}`;
 
 
   // ===================================================
-  // QR CODE PIX
+  // INSTRUÇÃO QR CODE
   // ===================================================
 
-  const textoQr =
+  const instrucaoQR =
     document.createElement("p");
 
-  textoQr.style.marginTop = "20px";
-  textoQr.style.marginBottom = "12px";
-  textoQr.style.fontWeight = "600";
 
-  textoQr.textContent =
+  instrucaoQR.style.marginTop =
+    "22px";
+
+  instrucaoQR.style.fontWeight =
+    "600";
+
+
+  instrucaoQR.textContent =
     "Escaneie o QR Code com o aplicativo do seu banco";
 
 
-  const areaQr =
+  // ===================================================
+  // ÁREA DO QR CODE
+  // ===================================================
+
+  const areaQR =
     document.createElement("div");
 
-  areaQr.id = "qrcode-pix";
 
-  areaQr.style.display = "flex";
-  areaQr.style.justifyContent = "center";
-  areaQr.style.alignItems = "center";
-  areaQr.style.margin = "16px auto 24px";
-  areaQr.style.padding = "14px";
-  areaQr.style.background = "#ffffff";
-  areaQr.style.borderRadius = "12px";
-  areaQr.style.width = "fit-content";
+  areaQR.id =
+    "qrcode-pix";
 
+
+  areaQR.style.width =
+    "230px";
+
+  areaQR.style.minHeight =
+    "230px";
+
+  areaQR.style.margin =
+    "20px auto";
+
+  areaQR.style.display =
+    "flex";
+
+  areaQR.style.alignItems =
+    "center";
+
+  areaQR.style.justifyContent =
+    "center";
+
+  areaQR.style.background =
+    "#ffffff";
+
+  areaQR.style.padding =
+    "10px";
+
+  areaQR.style.borderRadius =
+    "12px";
+
+
+  // ===================================================
+  // AVISO CASO QR CODE FALHE
+  // ===================================================
+
+  const avisoQR =
+    document.createElement("p");
+
+
+  avisoQR.style.display =
+    "none";
+
+  avisoQR.style.margin =
+    "18px 0";
+
+
+  avisoQR.textContent =
+    "Não foi possível carregar o QR Code. Use o Pix Copia e Cola abaixo.";
+
+
+  // ===================================================
+  // INSTRUÇÃO COPIA E COLA
+  // ===================================================
 
   const instrucao =
     document.createElement("p");
+
+
+  instrucao.style.marginTop =
+    "20px";
+
 
   instrucao.textContent =
     "Ou copie o código Pix abaixo e faça o pagamento no aplicativo do seu banco.";
 
 
+  // ===================================================
+  // CÓDIGO PIX
+  // ===================================================
+
   const codigo =
     document.createElement("textarea");
 
-  codigo.value = codigoPix;
-  codigo.readOnly = true;
-  codigo.rows = 5;
 
-  codigo.style.width = "100%";
-  codigo.style.boxSizing = "border-box";
-  codigo.style.padding = "12px";
-  codigo.style.marginTop = "10px";
+  codigo.value =
+    codigoPix;
 
+
+  codigo.readOnly =
+    true;
+
+
+  codigo.rows =
+    5;
+
+
+  codigo.style.width =
+    "100%";
+
+  codigo.style.boxSizing =
+    "border-box";
+
+  codigo.style.padding =
+    "12px";
+
+  codigo.style.marginTop =
+    "10px";
+
+
+  // ===================================================
+  // BOTÃO COPIAR
+  // ===================================================
 
   const botaoCopiar =
     document.createElement("button");
 
-  botaoCopiar.type = "button";
+
+  botaoCopiar.type =
+    "button";
+
 
   botaoCopiar.className =
     "botao botao-dourado";
 
+
   botaoCopiar.style.marginTop =
     "12px";
+
 
   botaoCopiar.textContent =
     "Copiar código Pix";
@@ -872,22 +1102,32 @@ function mostrarPagamentoPix(
       try {
 
         await navigator.clipboard
-          .writeText(codigoPix);
+          .writeText(
+            codigoPix
+          );
+
 
         botaoCopiar.textContent =
           "✓ Código Pix copiado";
 
+
       } catch {
 
         codigo.focus();
+
         codigo.select();
+
 
         try {
 
-          document.execCommand("copy");
+          document.execCommand(
+            "copy"
+          );
+
 
           botaoCopiar.textContent =
             "✓ Código Pix copiado";
+
 
         } catch {
 
@@ -900,27 +1140,41 @@ function mostrarPagamentoPix(
   );
 
 
+  // ===================================================
+  // AVISO WHATSAPP
+  // ===================================================
+
   const aviso =
     document.createElement("p");
 
+
   aviso.style.marginTop =
     "20px";
+
 
   aviso.textContent =
     "Depois do pagamento, clique abaixo para enviar o comprovante pelo WhatsApp.";
 
 
+  // ===================================================
+  // BOTÃO WHATSAPP
+  // ===================================================
+
   const botaoWhatsapp =
     document.createElement("button");
+
 
   botaoWhatsapp.type =
     "button";
 
+
   botaoWhatsapp.className =
     "botao botao-dourado";
 
+
   botaoWhatsapp.style.marginTop =
     "10px";
+
 
   botaoWhatsapp.textContent =
     "Já paguei — enviar comprovante";
@@ -931,17 +1185,21 @@ function mostrarPagamentoPix(
     () => {
 
       if (
-        servico.value !== dados.servico ||
-        modalidade.value !== dados.modalidade
+        servico.value !==
+          dados.servico ||
+        modalidade.value !==
+          dados.modalidade
       ) {
 
         caixa.remove();
 
         pagamento.value = "";
 
+
         alert(
           "A consulta ou modalidade foi alterada. Gere o pagamento novamente."
         );
+
 
         return;
       }
@@ -954,15 +1212,19 @@ function mostrarPagamentoPix(
         );
 
 
-      if (totalAtual !== total) {
+      if (
+        totalAtual !== total
+      ) {
 
         caixa.remove();
 
         pagamento.value = "";
 
+
         alert(
           "O valor do atendimento mudou. Gere o pagamento novamente."
         );
+
 
         return;
       }
@@ -980,63 +1242,132 @@ function mostrarPagamentoPix(
       mensagem +=
         "\n\n✅ Cliente informou que realizou o pagamento.";
 
+
       mensagem +=
         "\n📎 Envie o comprovante nesta conversa.";
 
 
-      abrirWhatsapp(mensagem);
+      abrirWhatsapp(
+        mensagem
+      );
     }
   );
 
 
-  caixa.appendChild(titulo);
-  caixa.appendChild(valor);
-  caixa.appendChild(resumo);
+  // ===================================================
+  // PRIMEIRO COLOCA A CAIXA NA PÁGINA
+  // ===================================================
 
-  // QR CODE
-  caixa.appendChild(textoQr);
-  caixa.appendChild(areaQr);
+  caixa.appendChild(
+    titulo
+  );
 
-  caixa.appendChild(instrucao);
-  caixa.appendChild(codigo);
-  caixa.appendChild(botaoCopiar);
-  caixa.appendChild(aviso);
-  caixa.appendChild(botaoWhatsapp);
+  caixa.appendChild(
+    valor
+  );
+
+  caixa.appendChild(
+    resumo
+  );
+
+  caixa.appendChild(
+    instrucaoQR
+  );
+
+  caixa.appendChild(
+    areaQR
+  );
+
+  caixa.appendChild(
+    avisoQR
+  );
+
+  caixa.appendChild(
+    instrucao
+  );
+
+  caixa.appendChild(
+    codigo
+  );
+
+  caixa.appendChild(
+    botaoCopiar
+  );
+
+  caixa.appendChild(
+    aviso
+  );
+
+  caixa.appendChild(
+    botaoWhatsapp
+  );
 
 
-  formulario.appendChild(caixa);
+  formulario.appendChild(
+    caixa
+  );
 
 
   // ===================================================
-  // GERAR QR CODE
+  // AGORA GERA O QR CODE
   // ===================================================
 
-  if (typeof QRCode !== "undefined") {
+  try {
 
-    new QRCode(areaQr, {
-      text: codigoPix,
-      width: 220,
-      height: 220,
-      correctLevel: QRCode.CorrectLevel.M
-    });
+    if (
+      typeof QRCode ===
+      "undefined"
+    ) {
 
-  } else {
+      throw new Error(
+        "Biblioteca QRCode não carregada."
+      );
+    }
 
-    areaQr.textContent =
-      "Não foi possível carregar o QR Code. Use o Pix Copia e Cola abaixo.";
 
+    areaQR.innerHTML = "";
+
+
+    new QRCode(
+      areaQR,
+      {
+        text: codigoPix,
+        width: 210,
+        height: 210,
+        correctLevel:
+          QRCode.CorrectLevel.M
+      }
+    );
+
+
+  } catch (erro) {
+
+    console.error(
+      "Erro ao gerar QR Code:",
+      erro
+    );
+
+
+    areaQR.style.display =
+      "none";
+
+
+    avisoQR.style.display =
+      "block";
   }
 
 
-  caixa.scrollIntoView({
-    behavior: "smooth",
-    block: "center"
-  });
+  caixa.scrollIntoView(
+    {
+      behavior: "smooth",
+      block: "center"
+    }
+  );
 }
 
 
 // =====================================================
-// ENVIO DO FORMULÁRIO
+// ENVIO DO FORMULÁRIO — ÚNICO
 // =====================================================
 
 if (formulario) {
@@ -1087,7 +1418,9 @@ if (formulario) {
       };
 
 
+      // =================================================
       // CAMPOS OBRIGATÓRIOS
+      // =================================================
 
       if (
         !dados.nome ||
@@ -1107,12 +1440,16 @@ if (formulario) {
       }
 
 
+      // =================================================
       // OUTRAS CIDADES
+      // =================================================
 
       if (
         dados.modalidade
           .toLowerCase()
-          .includes("outra cidade")
+          .includes(
+            "outra cidade"
+          )
       ) {
 
         const mensagemOutraCidade = [
@@ -1122,10 +1459,15 @@ if (formulario) {
           "",
 
           `Nome: ${dados.nome}`,
+
           `WhatsApp: ${dados.whatsapp}`,
+
           `Consulta: ${dados.servico}`,
+
           `Modalidade: ${dados.modalidade}`,
+
           `Data pretendida: ${dados.dia}`,
+
           `Horário pretendido: ${dados.horario}`,
 
           "",
@@ -1147,22 +1489,29 @@ if (formulario) {
           mensagemOutraCidade
         );
 
+
         return;
       }
 
 
+      // =================================================
       // DINHEIRO FÍSICO
+      // =================================================
 
       const pagamentoEmDinheiro =
         dados.pagamento
           .toLowerCase()
-          .includes("dinheiro");
+          .includes(
+            "dinheiro"
+          );
 
 
       const atendimentoOnline =
         dados.modalidade
           .toLowerCase()
-          .includes("online");
+          .includes(
+            "online"
+          );
 
 
       if (
@@ -1174,13 +1523,18 @@ if (formulario) {
           "Pagamento em dinheiro está disponível somente para atendimentos presenciais. Escolha Pix ou cartão de crédito para atendimento online."
         );
 
-        pagamento.value = "";
+
+        pagamento.value =
+          "";
+
 
         return;
       }
 
 
+      // =================================================
       // RECALCULAR VALOR
+      // =================================================
 
       const valorConsulta =
         obterValorConsulta(
@@ -1204,13 +1558,18 @@ if (formulario) {
           "Não foi possível calcular o valor do atendimento."
         );
 
+
         return;
       }
 
 
+      // =================================================
       // DINHEIRO — PRESENCIAL
+      // =================================================
 
-      if (pagamentoEmDinheiro) {
+      if (
+        pagamentoEmDinheiro
+      ) {
 
         let mensagemDinheiro =
           montarMensagem(
@@ -1229,16 +1588,21 @@ if (formulario) {
           mensagemDinheiro
         );
 
+
         return;
       }
 
 
+      // =================================================
       // PIX
+      // =================================================
 
       if (
         dados.pagamento
           .toLowerCase()
-          .includes("pix")
+          .includes(
+            "pix"
+          )
       ) {
 
         const codigoPix =
@@ -1254,27 +1618,37 @@ if (formulario) {
           valorConsulta
         );
 
+
         return;
       }
 
 
+      // =================================================
       // CARTÃO STONE
+      // =================================================
 
       if (
         dados.pagamento
           .toLowerCase()
-          .includes("cart")
+          .includes(
+            "cart"
+          )
       ) {
 
         const linkPagamento =
-          linksStone[total];
+          linksStone[
+            total
+          ];
 
 
-        if (!linkPagamento) {
+        if (
+          !linkPagamento
+        ) {
 
           alert(
             `Não existe link Stone configurado para R$ ${formatarDinheiro(total)}.`
           );
+
 
           return;
         }
@@ -1282,16 +1656,19 @@ if (formulario) {
 
         localStorage.setItem(
           "ultimoAgendamento",
-          JSON.stringify({
-            ...dados,
-            valorConsulta,
-            total
-          })
+          JSON.stringify(
+            {
+              ...dados,
+              valorConsulta,
+              total
+            }
+          )
         );
 
 
         window.location.href =
           linkPagamento;
+
 
         return;
       }
@@ -1300,7 +1677,6 @@ if (formulario) {
       alert(
         "Escolha Pix, cartão de crédito ou dinheiro físico."
       );
-
     }
   );
 }
@@ -1311,12 +1687,16 @@ if (formulario) {
 // =====================================================
 
 const musica =
-  document.getElementById("musica");
+  document.getElementById(
+    "musica"
+  );
+
 
 const botaoMusica =
   document.getElementById(
     "botao-musica"
   );
+
 
 const listaMusicas = [
   "musica1.mp3",
@@ -1325,13 +1705,16 @@ const listaMusicas = [
   "musica4.mp3"
 ];
 
+
 let musicaAtual =
   Math.floor(
     Math.random() *
     listaMusicas.length
   );
 
-let tocando = false;
+
+let tocando =
+  false;
 
 
 if (
@@ -1339,10 +1722,14 @@ if (
   botaoMusica
 ) {
 
-  musica.volume = 0.25;
+  musica.volume =
+    0.25;
+
 
   musica.src =
-    listaMusicas[musicaAtual];
+    listaMusicas[
+      musicaAtual
+    ];
 
 
   botaoMusica.addEventListener(
@@ -1355,20 +1742,28 @@ if (
 
           await musica.play();
 
-          tocando = true;
+
+          tocando =
+            true;
+
 
           botaoMusica.textContent =
             "❚❚ Pausar";
+
 
         } else {
 
           musica.pause();
 
-          tocando = false;
+
+          tocando =
+            false;
+
 
           botaoMusica.textContent =
             "♪ Música";
         }
+
 
       } catch {
 
@@ -1388,18 +1783,27 @@ if (
         (musicaAtual + 1) %
         listaMusicas.length;
 
+
       musica.src =
-        listaMusicas[musicaAtual];
+        listaMusicas[
+          musicaAtual
+        ];
+
 
       try {
 
         await musica.play();
 
-        tocando = true;
+
+        tocando =
+          true;
+
 
       } catch {
 
-        tocando = false;
+        tocando =
+          false;
+
 
         botaoMusica.textContent =
           "♪ Música";
@@ -1417,6 +1821,7 @@ const botaoInstagram =
   document.getElementById(
     "instagram"
   );
+
 
 if (botaoInstagram) {
 
@@ -1443,6 +1848,7 @@ const botaoTema =
     "botao-tema"
   );
 
+
 const temaSistema =
   window.matchMedia(
     "(prefers-color-scheme: dark)"
@@ -1456,6 +1862,7 @@ function aplicarTema(noturno) {
     noturno
   );
 
+
   if (botaoTema) {
 
     botaoTema.textContent =
@@ -1467,16 +1874,30 @@ function aplicarTema(noturno) {
 
 
 const temaSalvo =
-  localStorage.getItem("tema");
+  localStorage.getItem(
+    "tema"
+  );
 
 
-if (temaSalvo === "noturno") {
+if (
+  temaSalvo ===
+  "noturno"
+) {
 
-  aplicarTema(true);
+  aplicarTema(
+    true
+  );
 
-} else if (temaSalvo === "claro") {
 
-  aplicarTema(false);
+} else if (
+  temaSalvo ===
+  "claro"
+) {
+
+  aplicarTema(
+    false
+  );
+
 
 } else {
 
@@ -1491,7 +1912,9 @@ temaSistema.addEventListener(
   (evento) => {
 
     if (
-      !localStorage.getItem("tema")
+      !localStorage.getItem(
+        "tema"
+      )
     ) {
 
       aplicarTema(
@@ -1550,7 +1973,9 @@ document.addEventListener(
       );
 
 
-    if (secoes.length > 0) {
+    if (
+      secoes.length > 0
+    ) {
 
       secoes[0]
         .classList
@@ -1562,7 +1987,8 @@ document.addEventListener(
 
 
     if (
-      "IntersectionObserver" in window
+      "IntersectionObserver"
+      in window
     ) {
 
       const observador =
@@ -1578,7 +2004,10 @@ document.addEventListener(
 
                   entrada.target
                     .classList
-                    .add("ativo");
+                    .add(
+                      "ativo"
+                    );
+
 
                   observador.unobserve(
                     entrada.target
@@ -1588,7 +2017,9 @@ document.addEventListener(
             );
           },
           {
-            threshold: 0.08,
+            threshold:
+              0.08,
+
             rootMargin:
               "0px 0px -30px 0px"
           }
@@ -1602,7 +2033,10 @@ document.addEventListener(
             "revelar"
           );
 
-          if (indice > 0) {
+
+          if (
+            indice > 0
+          ) {
 
             observador.observe(
               secao
@@ -1610,6 +2044,7 @@ document.addEventListener(
           }
         }
       );
+
 
     } else {
 
@@ -1636,6 +2071,7 @@ const mensagemData =
     "mensagem-data"
   );
 
+
 if (
   dia &&
   mensagemData
@@ -1655,6 +2091,7 @@ if (
     atualizarMensagemData
   );
 
+
   dia.addEventListener(
     "input",
     atualizarMensagemData
@@ -1662,4 +2099,4 @@ if (
 
 
   atualizarMensagemData();
-      }
+    }
