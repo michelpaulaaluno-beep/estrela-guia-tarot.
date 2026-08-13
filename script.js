@@ -94,7 +94,7 @@ if (dia) {
 
 
 // =====================================================
-// NORMALIZAR HORÁRIO
+// GOOGLE AGENDA — NORMALIZAR HORÁRIO
 // =====================================================
 
 function normalizarHora(valor) {
@@ -116,18 +116,13 @@ function normalizarHora(valor) {
 }
 
 
-// =====================================================
-// PREENCHER HORÁRIOS
-// =====================================================
-
 function mostrarHorarios(ocupados = []) {
 
   if (!horario) {
     return;
   }
 
-  const horarioSelecionado =
-    horario.value;
+  const horarioSelecionado = horario.value;
 
   horario.innerHTML =
     '<option value="">Selecione um horário</option>';
@@ -161,6 +156,7 @@ function mostrarHorarios(ocupados = []) {
         return hora === inicio;
       });
 
+
     if (!ocupado) {
 
       const opcao =
@@ -179,6 +175,7 @@ function mostrarHorarios(ocupados = []) {
       quantidadeLivres++;
     }
   });
+
 
   if (quantidadeLivres > 0) {
 
@@ -215,6 +212,7 @@ async function consultarAgenda(dataSelecionada) {
       controlador.abort();
     }, 4000);
 
+
   try {
 
     const url =
@@ -228,6 +226,7 @@ async function consultarAgenda(dataSelecionada) {
         signal: controlador.signal
       });
 
+
     if (!resposta.ok) {
 
       throw new Error(
@@ -235,15 +234,16 @@ async function consultarAgenda(dataSelecionada) {
       );
     }
 
+
     const texto =
       await resposta.text();
 
     let dados;
 
+
     try {
 
-      dados =
-        JSON.parse(texto);
+      dados = JSON.parse(texto);
 
     } catch {
 
@@ -252,16 +252,14 @@ async function consultarAgenda(dataSelecionada) {
       );
     }
 
-    if (
-      dados &&
-      dados.sucesso === false
-    ) {
+
+    if (dados && dados.sucesso === false) {
 
       throw new Error(
-        dados.erro ||
-        "Erro retornado pela Agenda."
+        dados.erro || "Erro retornado pela Agenda."
       );
     }
+
 
     if (
       dados &&
@@ -271,12 +269,15 @@ async function consultarAgenda(dataSelecionada) {
       return dados.ocupados;
     }
 
+
     if (Array.isArray(dados)) {
 
       return dados;
     }
 
+
     return [];
+
 
   } finally {
 
@@ -286,7 +287,7 @@ async function consultarAgenda(dataSelecionada) {
 
 
 // =====================================================
-// ESCOLHA DA DATA / LIBERAÇÃO DOS HORÁRIOS
+// ESCOLHA DA DATA
 // =====================================================
 
 if (dia && horario) {
@@ -296,134 +297,131 @@ if (dia && horario) {
   horario.innerHTML =
     '<option value="">Escolha uma data</option>';
 
-  dia.addEventListener(
-    "change",
-    async () => {
+  dia.addEventListener("change", async () => {
 
-      if (!dia.value) {
+    if (!dia.value) {
 
-        horario.innerHTML =
-          '<option value="">Escolha uma data</option>';
+      horario.innerHTML =
+        '<option value="">Escolha uma data</option>';
 
-        horario.disabled = true;
+      horario.disabled = true;
 
-        return;
+      return;
+    }
+
+
+    // LIBERA OS HORÁRIOS IMEDIATAMENTE
+
+    horario.innerHTML =
+      '<option value="">Selecione um horário</option>';
+
+    horariosDisponiveis.forEach((hora) => {
+
+      const opcao =
+        document.createElement("option");
+
+      opcao.value = hora;
+      opcao.textContent = hora;
+
+      horario.appendChild(opcao);
+    });
+
+    horario.disabled = false;
+
+
+    // CONSULTA GOOGLE AGENDA EM SEGUNDO PLANO
+
+    try {
+
+      const ocupados =
+        await consultarAgenda(dia.value);
+
+
+      horario
+        .querySelectorAll("option")
+        .forEach((opcao) => {
+
+          if (!opcao.value) {
+            return;
+          }
+
+
+          const hora =
+            opcao.value;
+
+
+          const estaOcupado =
+            ocupados.some((evento) => {
+
+              if (!evento) {
+                return false;
+              }
+
+              const inicio =
+                normalizarHora(evento.inicio);
+
+              const fim =
+                normalizarHora(evento.fim);
+
+
+              if (!inicio) {
+                return false;
+              }
+
+
+              if (fim) {
+
+                return (
+                  hora >= inicio &&
+                  hora < fim
+                );
+              }
+
+
+              return hora === inicio;
+            });
+
+
+          if (estaOcupado) {
+
+            opcao.disabled = true;
+
+            opcao.textContent =
+              `${hora} — indisponível`;
+          }
+
+        });
+
+
+      const selecionado =
+        horario.options[
+          horario.selectedIndex
+        ];
+
+
+      if (
+        selecionado &&
+        selecionado.disabled
+      ) {
+
+        horario.value = "";
+
+        alert(
+          "Esse horário acabou de ficar indisponível. Escolha outro horário."
+        );
       }
 
 
-      // Libera os horários imediatamente.
-      horario.innerHTML =
-        '<option value="">Selecione um horário</option>';
+    } catch (erro) {
 
-      horariosDisponiveis.forEach(
-        (hora) => {
-
-          const opcao =
-            document.createElement("option");
-
-          opcao.value = hora;
-          opcao.textContent = hora;
-
-          horario.appendChild(opcao);
-        }
+      console.warn(
+        "Não foi possível consultar o Google Agenda:",
+        erro
       );
 
-      horario.disabled = false;
-
-
-      // Consulta a agenda depois, sem travar
-      // o campo de horário.
-      try {
-
-        const ocupados =
-          await consultarAgenda(
-            dia.value
-          );
-
-        horario
-          .querySelectorAll("option")
-          .forEach((opcao) => {
-
-            if (!opcao.value) {
-              return;
-            }
-
-            const hora =
-              opcao.value;
-
-            const estaOcupado =
-              ocupados.some(
-                (evento) => {
-
-                  if (!evento) {
-                    return false;
-                  }
-
-                  const inicio =
-                    normalizarHora(
-                      evento.inicio
-                    );
-
-                  const fim =
-                    normalizarHora(
-                      evento.fim
-                    );
-
-                  if (!inicio) {
-                    return false;
-                  }
-
-                  if (fim) {
-
-                    return (
-                      hora >= inicio &&
-                      hora < fim
-                    );
-                  }
-
-                  return hora === inicio;
-                }
-              );
-
-            if (estaOcupado) {
-
-              opcao.disabled = true;
-
-              opcao.textContent =
-                `${hora} — indisponível`;
-            }
-          });
-
-
-        const selecionado =
-          horario.options[
-            horario.selectedIndex
-          ];
-
-        if (
-          selecionado &&
-          selecionado.disabled
-        ) {
-
-          horario.value = "";
-
-          alert(
-            "Esse horário acabou de ficar indisponível. Escolha outro horário."
-          );
-        }
-
-      } catch (erro) {
-
-        console.warn(
-          "Não foi possível consultar o Google Agenda:",
-          erro
-        );
-
-        // Se a agenda falhar,
-        // os horários continuam liberados.
-      }
     }
-  );
+
+  });
 }
 
 
@@ -463,16 +461,14 @@ function calcularTotal(
 ) {
 
   const valorConsulta =
-    obterValorConsulta(
-      servicoSelecionado
-    );
+    obterValorConsulta(servicoSelecionado);
 
   if (valorConsulta === null) {
     return null;
   }
 
-  let total =
-    valorConsulta;
+  let total = valorConsulta;
+
 
   if (
     modalidadeSelecionada &&
@@ -483,6 +479,7 @@ function calcularTotal(
 
     total += 10;
   }
+
 
   return total;
 }
@@ -515,9 +512,11 @@ function invalidarPagamento() {
     caixaPix.remove();
   }
 
+
   localStorage.removeItem(
     "ultimoAgendamento"
   );
+
 
   if (pagamento) {
     pagamento.value = "";
@@ -531,13 +530,9 @@ function invalidarPagamento() {
 
 if (servico) {
 
-  servico.addEventListener(
-    "change",
-    () => {
-
-      invalidarPagamento();
-    }
-  );
+  servico.addEventListener("change", () => {
+    invalidarPagamento();
+  });
 }
 
 
@@ -547,13 +542,9 @@ if (servico) {
 
 if (modalidade) {
 
-  modalidade.addEventListener(
-    "change",
-    () => {
-
-      invalidarPagamento();
-    }
-  );
+  modalidade.addEventListener("change", () => {
+    invalidarPagamento();
+  });
 }
 
 
@@ -563,8 +554,7 @@ if (modalidade) {
 
 function campoPix(id, valor) {
 
-  const texto =
-    String(valor);
+  const texto = String(valor);
 
   const tamanho =
     String(texto.length)
@@ -580,8 +570,7 @@ function campoPix(id, valor) {
 
 function crc16(payload) {
 
-  let resultado =
-    0xFFFF;
+  let resultado = 0xFFFF;
 
   for (
     let i = 0;
@@ -592,19 +581,17 @@ function crc16(payload) {
     resultado ^=
       payload.charCodeAt(i) << 8;
 
+
     for (
       let j = 0;
       j < 8;
       j++
     ) {
 
-      if (
-        (resultado & 0x8000) !== 0
-      ) {
+      if ((resultado & 0x8000) !== 0) {
 
         resultado =
-          (resultado << 1) ^
-          0x1021;
+          (resultado << 1) ^ 0x1021;
 
       } else {
 
@@ -612,10 +599,10 @@ function crc16(payload) {
           resultado << 1;
       }
 
-      resultado &=
-        0xFFFF;
+      resultado &= 0xFFFF;
     }
   }
+
 
   return resultado
     .toString(16)
@@ -649,31 +636,17 @@ function gerarPixCopiaECola(valor) {
     );
 
   const valorFormatado =
-    Number(valor)
-      .toFixed(2);
+    Number(valor).toFixed(2);
+
 
   let payload = "";
 
-  payload +=
-    campoPix("00", "01");
-
-  payload +=
-    contaPix;
-
-  payload +=
-    campoPix("52", "0000");
-
-  payload +=
-    campoPix("53", "986");
-
-  payload +=
-    campoPix(
-      "54",
-      valorFormatado
-    );
-
-  payload +=
-    campoPix("58", "BR");
+  payload += campoPix("00", "01");
+  payload += contaPix;
+  payload += campoPix("52", "0000");
+  payload += campoPix("53", "986");
+  payload += campoPix("54", valorFormatado);
+  payload += campoPix("58", "BR");
 
   payload +=
     campoPix(
@@ -695,8 +668,7 @@ function gerarPixCopiaECola(valor) {
 
   payload += "6304";
 
-  return payload +
-    crc16(payload);
+  return payload + crc16(payload);
 }
 
 
@@ -714,6 +686,7 @@ function montarMensagem(
   const temDeslocamento =
     total > valorConsulta;
 
+
   return [
 
     "✨ SOLICITAÇÃO DE AGENDAMENTO — ESTRELA GUIA TAROT",
@@ -721,15 +694,10 @@ function montarMensagem(
     "",
 
     `Nome: ${dados.nome}`,
-
     `WhatsApp: ${dados.whatsapp}`,
-
     `Consulta: ${dados.servico}`,
-
     `Modalidade: ${dados.modalidade}`,
-
     `Data: ${dados.dia}`,
-
     `Horário: ${dados.horario}`,
 
     "",
@@ -774,7 +742,7 @@ function abrirWhatsapp(mensagem) {
 
 
 // =====================================================
-// MOSTRAR PIX NA TELA
+// MOSTRAR PIX + QR CODE NA TELA
 // =====================================================
 
 function mostrarPagamentoPix(
@@ -793,29 +761,19 @@ function mostrarPagamentoPix(
     anterior.remove();
   }
 
+
   const caixa =
     document.createElement("div");
 
   caixa.id =
     "pagamento-pix-gerado";
 
-  caixa.style.marginTop =
-    "24px";
-
-  caixa.style.padding =
-    "22px";
-
-  caixa.style.borderRadius =
-    "14px";
-
-  caixa.style.background =
-    "#ffffff";
-
-  caixa.style.color =
-    "#222222";
-
-  caixa.style.textAlign =
-    "center";
+  caixa.style.marginTop = "24px";
+  caixa.style.padding = "22px";
+  caixa.style.borderRadius = "14px";
+  caixa.style.background = "#ffffff";
+  caixa.style.color = "#222222";
+  caixa.style.textAlign = "center";
 
 
   const titulo =
@@ -828,11 +786,8 @@ function mostrarPagamentoPix(
   const valor =
     document.createElement("p");
 
-  valor.style.fontSize =
-    "26px";
-
-  valor.style.fontWeight =
-    "bold";
+  valor.style.fontSize = "26px";
+  valor.style.fontWeight = "bold";
 
   valor.textContent =
     `R$ ${formatarDinheiro(total)}`;
@@ -845,43 +800,60 @@ function mostrarPagamentoPix(
     `${dados.servico} — ${dados.modalidade}`;
 
 
+  // ===================================================
+  // QR CODE PIX
+  // ===================================================
+
+  const textoQr =
+    document.createElement("p");
+
+  textoQr.style.marginTop = "20px";
+  textoQr.style.marginBottom = "12px";
+  textoQr.style.fontWeight = "600";
+
+  textoQr.textContent =
+    "Escaneie o QR Code com o aplicativo do seu banco";
+
+
+  const areaQr =
+    document.createElement("div");
+
+  areaQr.id = "qrcode-pix";
+
+  areaQr.style.display = "flex";
+  areaQr.style.justifyContent = "center";
+  areaQr.style.alignItems = "center";
+  areaQr.style.margin = "16px auto 24px";
+  areaQr.style.padding = "14px";
+  areaQr.style.background = "#ffffff";
+  areaQr.style.borderRadius = "12px";
+  areaQr.style.width = "fit-content";
+
+
   const instrucao =
     document.createElement("p");
 
   instrucao.textContent =
-    "Copie o código Pix abaixo e faça o pagamento no aplicativo do seu banco.";
+    "Ou copie o código Pix abaixo e faça o pagamento no aplicativo do seu banco.";
 
 
   const codigo =
     document.createElement("textarea");
 
-  codigo.value =
-    codigoPix;
+  codigo.value = codigoPix;
+  codigo.readOnly = true;
+  codigo.rows = 5;
 
-  codigo.readOnly =
-    true;
-
-  codigo.rows =
-    5;
-
-  codigo.style.width =
-    "100%";
-
-  codigo.style.boxSizing =
-    "border-box";
-
-  codigo.style.padding =
-    "12px";
-
-  codigo.style.marginTop =
-    "10px";
+  codigo.style.width = "100%";
+  codigo.style.boxSizing = "border-box";
+  codigo.style.padding = "12px";
+  codigo.style.marginTop = "10px";
 
 
   const botaoCopiar =
     document.createElement("button");
 
-  botaoCopiar.type =
-    "button";
+  botaoCopiar.type = "button";
 
   botaoCopiar.className =
     "botao botao-dourado";
@@ -912,9 +884,7 @@ function mostrarPagamentoPix(
 
         try {
 
-          document.execCommand(
-            "copy"
-          );
+          document.execCommand("copy");
 
           botaoCopiar.textContent =
             "✓ Código Pix copiado";
@@ -961,10 +931,8 @@ function mostrarPagamentoPix(
     () => {
 
       if (
-        servico.value !==
-          dados.servico ||
-        modalidade.value !==
-          dados.modalidade
+        servico.value !== dados.servico ||
+        modalidade.value !== dados.modalidade
       ) {
 
         caixa.remove();
@@ -986,9 +954,7 @@ function mostrarPagamentoPix(
         );
 
 
-      if (
-        totalAtual !== total
-      ) {
+      if (totalAtual !== total) {
 
         caixa.remove();
 
@@ -1018,49 +984,48 @@ function mostrarPagamentoPix(
         "\n📎 Envie o comprovante nesta conversa.";
 
 
-      abrirWhatsapp(
-        mensagem
-      );
+      abrirWhatsapp(mensagem);
     }
   );
 
 
-  caixa.appendChild(
-    titulo
-  );
+  caixa.appendChild(titulo);
+  caixa.appendChild(valor);
+  caixa.appendChild(resumo);
 
-  caixa.appendChild(
-    valor
-  );
+  // QR CODE
+  caixa.appendChild(textoQr);
+  caixa.appendChild(areaQr);
 
-  caixa.appendChild(
-    resumo
-  );
-
-  caixa.appendChild(
-    instrucao
-  );
-
-  caixa.appendChild(
-    codigo
-  );
-
-  caixa.appendChild(
-    botaoCopiar
-  );
-
-  caixa.appendChild(
-    aviso
-  );
-
-  caixa.appendChild(
-    botaoWhatsapp
-  );
+  caixa.appendChild(instrucao);
+  caixa.appendChild(codigo);
+  caixa.appendChild(botaoCopiar);
+  caixa.appendChild(aviso);
+  caixa.appendChild(botaoWhatsapp);
 
 
-  formulario.appendChild(
-    caixa
-  );
+  formulario.appendChild(caixa);
+
+
+  // ===================================================
+  // GERAR QR CODE
+  // ===================================================
+
+  if (typeof QRCode !== "undefined") {
+
+    new QRCode(areaQr, {
+      text: codigoPix,
+      width: 220,
+      height: 220,
+      correctLevel: QRCode.CorrectLevel.M
+    });
+
+  } else {
+
+    areaQr.textContent =
+      "Não foi possível carregar o QR Code. Use o Pix Copia e Cola abaixo.";
+
+  }
 
 
   caixa.scrollIntoView({
@@ -1157,15 +1122,10 @@ if (formulario) {
           "",
 
           `Nome: ${dados.nome}`,
-
           `WhatsApp: ${dados.whatsapp}`,
-
           `Consulta: ${dados.servico}`,
-
           `Modalidade: ${dados.modalidade}`,
-
           `Data pretendida: ${dados.dia}`,
-
           `Horário pretendido: ${dados.horario}`,
 
           "",
@@ -1250,9 +1210,7 @@ if (formulario) {
 
       // DINHEIRO — PRESENCIAL
 
-      if (
-        pagamentoEmDinheiro
-      ) {
+      if (pagamentoEmDinheiro) {
 
         let mensagemDinheiro =
           montarMensagem(
@@ -1342,6 +1300,7 @@ if (formulario) {
       alert(
         "Escolha Pix, cartão de crédito ou dinheiro físico."
       );
+
     }
   );
 }
@@ -1352,9 +1311,7 @@ if (formulario) {
 // =====================================================
 
 const musica =
-  document.getElementById(
-    "musica"
-  );
+  document.getElementById("musica");
 
 const botaoMusica =
   document.getElementById(
@@ -1374,8 +1331,7 @@ let musicaAtual =
     listaMusicas.length
   );
 
-let tocando =
-  false;
+let tocando = false;
 
 
 if (
@@ -1383,13 +1339,10 @@ if (
   botaoMusica
 ) {
 
-  musica.volume =
-    0.25;
+  musica.volume = 0.25;
 
   musica.src =
-    listaMusicas[
-      musicaAtual
-    ];
+    listaMusicas[musicaAtual];
 
 
   botaoMusica.addEventListener(
@@ -1436,9 +1389,7 @@ if (
         listaMusicas.length;
 
       musica.src =
-        listaMusicas[
-          musicaAtual
-        ];
+        listaMusicas[musicaAtual];
 
       try {
 
@@ -1500,12 +1451,10 @@ const temaSistema =
 
 function aplicarTema(noturno) {
 
-  document.body
-    .classList
-    .toggle(
-      "modo-noturno",
-      noturno
-    );
+  document.body.classList.toggle(
+    "modo-noturno",
+    noturno
+  );
 
   if (botaoTema) {
 
@@ -1518,20 +1467,14 @@ function aplicarTema(noturno) {
 
 
 const temaSalvo =
-  localStorage.getItem(
-    "tema"
-  );
+  localStorage.getItem("tema");
 
 
-if (
-  temaSalvo === "noturno"
-) {
+if (temaSalvo === "noturno") {
 
   aplicarTema(true);
 
-} else if (
-  temaSalvo === "claro"
-) {
+} else if (temaSalvo === "claro") {
 
   aplicarTema(false);
 
@@ -1548,9 +1491,7 @@ temaSistema.addEventListener(
   (evento) => {
 
     if (
-      !localStorage.getItem(
-        "tema"
-      )
+      !localStorage.getItem("tema")
     ) {
 
       aplicarTema(
@@ -1609,9 +1550,7 @@ document.addEventListener(
       );
 
 
-    if (
-      secoes.length > 0
-    ) {
+    if (secoes.length > 0) {
 
       secoes[0]
         .classList
@@ -1639,14 +1578,11 @@ document.addEventListener(
 
                   entrada.target
                     .classList
-                    .add(
-                      "ativo"
-                    );
+                    .add("ativo");
 
-                  observador
-                    .unobserve(
-                      entrada.target
-                    );
+                  observador.unobserve(
+                    entrada.target
+                  );
                 }
               }
             );
@@ -1666,9 +1602,7 @@ document.addEventListener(
             "revelar"
           );
 
-          if (
-            indice > 0
-          ) {
+          if (indice > 0) {
 
             observador.observe(
               secao
@@ -1702,48 +1636,19 @@ const mensagemData =
     "mensagem-data"
   );
 
-const campoData =
-  document.querySelector(
-    ".campo-data"
-  );
-
-
-function atualizarMensagemData() {
-
-  if (
-    !dia ||
-    !mensagemData ||
-    !campoData
-  ) {
-    return;
-  }
-
-  if (dia.value) {
-
-    campoData.classList.add(
-      "tem-data"
-    );
-
-    mensagemData.style.display =
-      "none";
-
-  } else {
-
-    campoData.classList.remove(
-      "tem-data"
-    );
-
-    mensagemData.style.display =
-      "block";
-  }
-}
-
-
 if (
   dia &&
-  mensagemData &&
-  campoData
+  mensagemData
 ) {
+
+  function atualizarMensagemData() {
+
+    mensagemData.style.display =
+      dia.value
+        ? "none"
+        : "block";
+  }
+
 
   dia.addEventListener(
     "change",
@@ -1755,5 +1660,6 @@ if (
     atualizarMensagemData
   );
 
+
   atualizarMensagemData();
-  }
+      }
