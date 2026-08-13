@@ -2497,7 +2497,358 @@ if (
 
   atualizarMensagemData();
 }
+// =====================================================
+// AJUSTES FINAIS — ESTRELA GUIA TAROT
+// 1. OUTRAS CIDADES: MÍNIMO 2 DIAS
+// 2. ESCONDER "AGENDAR AGORA" NO AGENDAMENTO
+// =====================================================
 
+
+// =====================================================
+// OUTRAS CIDADES — VERIFICAR ANTECEDÊNCIA
+// =====================================================
+
+function atendimentoOutraCidade() {
+
+  if (!modalidade) {
+    return false;
+  }
+
+  return modalidade.value
+    .toLowerCase()
+    .includes("outra cidade");
+}
+
+
+function dataComDoisDiasAntecedencia() {
+
+  if (!dia || !dia.value) {
+    return false;
+  }
+
+  const partes =
+    dia.value.split("-");
+
+  if (partes.length !== 3) {
+    return false;
+  }
+
+  const dataEscolhida =
+    new Date(
+      Number(partes[0]),
+      Number(partes[1]) - 1,
+      Number(partes[2]),
+      0,
+      0,
+      0,
+      0
+    );
+
+
+  const hoje =
+    new Date();
+
+  hoje.setHours(
+    0,
+    0,
+    0,
+    0
+  );
+
+
+  const dataMinima =
+    new Date(hoje);
+
+  dataMinima.setDate(
+    dataMinima.getDate() + 2
+  );
+
+
+  return (
+    dataEscolhida >= dataMinima
+  );
+}
+
+
+// =====================================================
+// AVISO VISUAL — OUTRAS CIDADES
+// =====================================================
+
+function atualizarAvisoOutraCidade() {
+
+  if (
+    !modalidade ||
+    !formulario
+  ) {
+    return;
+  }
+
+
+  let aviso =
+    document.getElementById(
+      "aviso-outra-cidade"
+    );
+
+
+  if (
+    atendimentoOutraCidade()
+  ) {
+
+    if (!aviso) {
+
+      aviso =
+        document.createElement("div");
+
+      aviso.id =
+        "aviso-outra-cidade";
+
+      aviso.style.margin =
+        "16px 0";
+
+      aviso.style.padding =
+        "15px";
+
+      aviso.style.borderRadius =
+        "10px";
+
+      aviso.style.background =
+        "#fff4d6";
+
+      aviso.style.color =
+        "#5d4314";
+
+      aviso.style.lineHeight =
+        "1.5";
+
+      aviso.style.fontWeight =
+        "600";
+
+
+      aviso.textContent =
+        "🚗 Atendimento em outras cidades deve ser solicitado com no mínimo 2 dias de antecedência, para verificar disponibilidade e valor do deslocamento.";
+
+
+      modalidade
+        .closest("label")
+        .insertAdjacentElement(
+          "afterend",
+          aviso
+        );
+    }
+
+  } else {
+
+    if (aviso) {
+      aviso.remove();
+    }
+  }
+}
+
+
+if (modalidade) {
+
+  modalidade.addEventListener(
+    "change",
+    atualizarAvisoOutraCidade
+  );
+
+
+  atualizarAvisoOutraCidade();
+}
+
+
+// =====================================================
+// BLOQUEAR OUTRA CIDADE COM MENOS DE 2 DIAS
+// =====================================================
+
+if (formulario) {
+
+  formulario.addEventListener(
+    "submit",
+    function (evento) {
+
+      if (
+        !atendimentoOutraCidade()
+      ) {
+        return;
+      }
+
+
+      if (
+        !dataComDoisDiasAntecedencia()
+      ) {
+
+        evento.preventDefault();
+
+        evento.stopImmediatePropagation();
+
+
+        alert(
+          "Para atendimento em outra cidade, o agendamento deve ser solicitado com no mínimo 2 dias de antecedência, para verificar disponibilidade e valor do deslocamento."
+        );
+
+
+        if (dia) {
+
+          dia.focus();
+
+          dia.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+          });
+        }
+
+
+        return false;
+      }
+
+    },
+    true
+  );
+}
+
+
+// =====================================================
+// BOTÃO FIXO "AGENDAR AGORA"
+// =====================================================
+
+(function corrigirBotaoAgendarFixo() {
+
+  const botao =
+    document.querySelector(
+      ".agendar-fixo"
+    );
+
+  const secao =
+    document.getElementById(
+      "agendamento"
+    );
+
+
+  if (
+    !botao ||
+    !secao
+  ) {
+    return;
+  }
+
+
+  // Transição suave
+
+  botao.style.transition =
+    "opacity 0.2s ease";
+
+
+  function atualizarBotao() {
+
+    const area =
+      secao.getBoundingClientRect();
+
+
+    const alturaTela =
+      window.innerHeight ||
+      document.documentElement.clientHeight;
+
+
+    /*
+      Consideramos que a pessoa entrou
+      no agendamento assim que qualquer
+      parte relevante da seção aparece
+      na tela.
+    */
+
+    const agendamentoVisivel =
+      area.top < alturaTela &&
+      area.bottom > 0;
+
+
+    if (agendamentoVisivel) {
+
+      botao.style.opacity =
+        "0";
+
+      botao.style.visibility =
+        "hidden";
+
+      botao.style.pointerEvents =
+        "none";
+
+      botao.setAttribute(
+        "aria-hidden",
+        "true"
+      );
+
+    } else {
+
+      botao.style.opacity =
+        "1";
+
+      botao.style.visibility =
+        "visible";
+
+      botao.style.pointerEvents =
+        "auto";
+
+      botao.removeAttribute(
+        "aria-hidden"
+      );
+    }
+  }
+
+
+  window.addEventListener(
+    "scroll",
+    atualizarBotao,
+    {
+      passive: true
+    }
+  );
+
+
+  window.addEventListener(
+    "resize",
+    atualizarBotao
+  );
+
+
+  window.addEventListener(
+    "orientationchange",
+    function () {
+
+      setTimeout(
+        atualizarBotao,
+        250
+      );
+    }
+  );
+
+
+  document.addEventListener(
+    "focusin",
+    function (evento) {
+
+      if (
+        secao.contains(
+          evento.target
+        )
+      ) {
+
+        botao.style.opacity =
+          "0";
+
+        botao.style.visibility =
+          "hidden";
+
+        botao.style.pointerEvents =
+          "none";
+      }
+    }
+  );
+
+
+  atualizarBotao();
+
+})();
 
 // =====================================================
 // FIM DO SCRIPT
